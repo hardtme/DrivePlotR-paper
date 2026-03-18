@@ -327,7 +327,7 @@ Harsh acceleration and hard braking are undesirable driving behaviors that are k
 #   colorvar = accel_event_cat,
 #   maplabel = glue::glue("{time_cst}; {accel_event_cat}"),
 #   colorpalette = "viridis", 
-#   fillOpacity = 0.75,
+#   fillopacity = 0.75,
 #   xlabel = "Time", 
 #   ylabels = c("Speed (MPH)", "Longitudinal Acceleration (g)", "Lateral Acceleration (g)"),
 #   showlegend = TRUE,
@@ -359,7 +359,7 @@ Figure \@ref(fig:rightturn) shows a low acceleration event detected during a dif
 # right_turn <- driveplot(
 #   shareddata = shared_drive_right, 
 #   maplabel = time_cst, colorvar = accel_event_cat, 
-#   colorpalette = "viridis", fillOpacity = 0.75, 
+#   colorpalette = "viridis", fillopacity = 0.75, 
 #   x = time_cst, 
 #   ys = c(speed_mph, accel_y), 
 #   xlabel = "Time", 
