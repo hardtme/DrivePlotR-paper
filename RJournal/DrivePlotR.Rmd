@@ -114,7 +114,7 @@ The interface for the \pkg{DrivePlotR} functions is similar to the interface of 
 
 Users pass required mappings to the functions as bare expressions (i.e., without quotes). For example, the variable for the horizontal axis of the companion graph in the `driveplot_companion()` function must be given as `x = time_cst`, not `x = "time_cst"`. If a user provides a required mapping within quotes, the function will be unable to find the column within the provided `SharedData` object and will throw an error. We made this choice to simplify the function interface for the user and reduce typing. However, this does increase the complexity of the function code on the backend. \pkg{DrivePlotR} handles non-standard evaluation using tidy evaluation from \CRANpkg{rlang} [@rlang].
 
-Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions()` and the `driveplot()` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). Our goal for doing this was to reduce confusion for the user when providing other function arguments.
+Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions()` and the `driveplot()` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). Our goal for doing this was to reduce confusion for the user when providing other function arguments (of which there are many).
 
 ## Plot Map Components
 
@@ -392,14 +392,14 @@ knitr::include_graphics("figures/function_hierarchy.png")
 
 Now, we describe the steps in a basic workflow for \pkg{DrivePlotR}.
 
-i. Make the drive data available in the R session. Non-sensitive drives from a naturalistic driving study have been made available as part of the \pkg{DrivePlotR} package, but any other data with both geographic and temporal components would also be suitable:
+i. Make the drive data available in the R session. Non-sensitive drives from a naturalistic driving study have been made available as part of the \pkg{DrivePlotR} package, but any other data with both geographic and temporal components would also be suitable. Recall that \pkg{DrivePlotR} expects one row for each observation in the data.
 
 ```{r loaddata, echo=TRUE}
 library(DrivePlotR)
 data("drive7")
 ```
 
-ii. Establish geographic variables and projection. Setting the geographic projection to WGS84 ensures that points in the data line up with maps in Leaflet. This is already done for the example dataset `drive7` included with \pkg{DrivePlotR}.
+ii. Establish the geographic variables and projection. Setting the geographic projection to WGS84 ensures that points in the data line up with maps in Leaflet. This is already done for the example dataset `drive7` included with \pkg{DrivePlotR}. Users may find that using functions from \CRANpkg{sf} makes this process easier, but \CRANpkg{sf} is not required to use \pkg{DrivePlotR}.
 
 iii. Convert data into a shared data frame.
 
