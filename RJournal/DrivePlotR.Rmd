@@ -399,15 +399,15 @@ library(DrivePlotR)
 data("drive7")
 ```
 
-ii. Establish the geographic variables and projection. Setting the geographic projection to WGS84 ensures that points in the data line up with maps in Leaflet. This is already done for the example dataset `drive7` included with \pkg{DrivePlotR}. Users may find that using functions from \CRANpkg{sf} makes this process easier, but \CRANpkg{sf} is not required to use \pkg{DrivePlotR}.
+ii. Establish the geographic variables and projection. Setting the coordinate reference system (CRS) to WGS84 is necessary to ensure that points are compatible with maps in Leaflet. This CRS is already set for the example dataset `drive7` included with \pkg{DrivePlotR}. The latitude and longitude coordinates in the example dataset `nds_data` included with \pkg{DrivePlotR} also already use the WGS84 CRS. Users may find that using functions from \CRANpkg{sf} makes it easier to set the CRS for their data, but \CRANpkg{sf} is not required to use \pkg{DrivePlotR}. 
 
-iii. Convert data into a shared data frame.
+iii. Convert the data into a shared data frame using \CRANpkg{crosstalk}.
 
 ```{r shareddata, echo=TRUE}
 shared_drive <- crosstalk::SharedData$new(drive7)
 ```
 
-iv. Create visualizations.
+iv. Create plot maps with \pkg{DrivePlotR}.
 
 Although the main purpose of \pkg{DrivePlotR} is for users to create linked visualizations with a map and one to four companion graphs, users can also create maps or companion graphs separately. A basic standalone map, such as the one in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-map)', '\\@ref(fig:basic-map-screenshot)'))`, can be created as follows:
 
@@ -429,7 +429,7 @@ knitr::include_url("figures/basic_map.html")
 knitr::include_graphics("figures/basic_map.png")
 ```
 
-Standalone companion graphs may also be created. The basic companion graph created by the code below is in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
+Users may also create standalone companion graphs. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
 
 ```{r basic-graph-code, echo=TRUE, eval=FALSE}
 driveplot_companion(shareddata = shared_drive, 
@@ -453,7 +453,7 @@ knitr::include_url("figures/basic_graph.html")
 knitr::include_graphics("figures/basic_graph.png")
 ```
 
-\pkg{DrivePlotR} offers options for customization. For example, the following code was used to create the plot map in Figure \@ref(fig:teaser).
+\pkg{DrivePlotR} offers many options to customize a plot map. For example, the following code was used to create the plot map in Figure \@ref(fig:teaser).
 
 ```{r teaser-code, echo=TRUE, eval=FALSE}
 driveplot(shareddata = shared_drive, 
@@ -468,9 +468,9 @@ driveplot(shareddata = shared_drive,
           plottitle = "A Drive in Omaha, NE")
 ```
 
-v. Save and share visualizations.
+v. Save and share plot maps.
 
-Visualizations made using \pkg{DrivePlotR} can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. Another option is to manually save the \pkg{DrivePlotR} visualization from the RStudio Viewer pane.
+\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. Another option is to manually save the \pkg{DrivePlotR} visualization from the RStudio Viewer pane.
 
 # Extensions/Limitations 
 
