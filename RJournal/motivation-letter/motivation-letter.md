@@ -13,29 +13,28 @@ The R Journal
 Dear Professor Cook,
 \bigskip
 
-Please consider our article titled "ToOoOlTiPs: An R Package for Customizable Tooltips in Interactive Graphics" for publication in the R Journal.
+Please consider our article titled "DrivePlotR: Shareable Linked Plot Maps for Multivariate High-Resolution Spatio-Temporal Data" for publication in the R Journal.
 
-The manuscript introduces the new package called `ToOoOlTiPs` which provides examples on how to use interactive graphics in journal articles, and general tips for making an interesting contribution.
+The manuscript introduces the new package called `DrivePlotR`, which creates interactive visualizations for vehicle trajectories. These visualizations display a map of the trajectory alongside graphs of other variables and are easy to share with collaborators. 
 
-We believe the readers of the R Journal will find this article helpful for their work because it provides generally useful instructions that will work for many purposes. 
+`DrivePlotR` is not yet available on CRAN, but we will time the CRAN submission with the article. 
 
-\bigskip
-\bigskip
-
-Regards,
-    
-    
-    
-    
-Quietest Quokka  
-Department of Letter Q  
-University of Little Mates  
-Somewhere, Australia  
-qquo@ulm.edu
+Readers of the R Journal will be interested in this article because it provides a new visualization tool for transportation data, a growing area of interest. The underlying structure of `DrivePlotR` will also inspire readers to create interactive visualization tools for their own applications.  
 
 \bigskip
+\bigskip
 
-NOTES: Modify this file with information about your article. 
+Sincerely,
+    
+    
+    
+    
+Marie Hardt  
+Department of Statistics  
+Iowa State University  
+Ames, Iowa, USA  
 
-1. It may be invisible to you, so be aware that after each address line there are two spaces, this makes the line break correctly.
-2. It is also reasonable to submit an .md format of your motivating letter instead of a pdf. 
+
+\bigskip
+
+
