@@ -114,7 +114,7 @@ The interface for the \pkg{DrivePlotR} functions is similar to the interface of 
 
 Users pass required mappings to the functions as bare expressions (i.e., without quotes). For example, the variable for the horizontal axis of the companion graph in the `driveplot_companion()` function must be given as `x = time_cst`, not `x = "time_cst"`. If a user provides a required mapping within quotes, the function will throw an error. We made this choice to simplify the function interface for the user and reduce typing. An additional benefit is that users can modify arguments within the \pkg{DrivePlotR} functions. For example, the user could convert from the US/Central time zone to UTC "on-the-fly" by specifying `x = as.POSIXct(time_cst, tz = "UTC")` within a call to`driveplot_companion()`. However, this non-standard evaluation increases the complexity of the function code on the backend. \pkg{DrivePlotR} handles non-standard evaluation using tidy evaluation from \CRANpkg{rlang} [@rlang].
 
-Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions()` and the `driveplot()` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). Our goal for doing this was to reduce confusion for the user when providing other function arguments (of which there are many). Users may modify the ys within the function arguments as well. For example, including `ys = c(speed_mph * 1.609, gyro_heading %% 360)` allows the user to convert the speed from miles per hour to kilometers per hour and ensure that the gyroscopic heading falls between 0 and 360, all within the call to `driveplot_companions()` or `driveplot()`.
+Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions()` and the `driveplot()` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). Our goal for doing this was to reduce confusion for the user when providing other function arguments (of which there are many). Users may modify the ys within the function arguments as well. For example, including `ys = c(speed_mph * 1.609, gyro_heading %% 360)` allows the user to convert the speed from miles per hour to kilometers per hour and ensure that the gyroscopic heading falls between 0 and 360, all within the call to `driveplot_companions()` or `driveplot()`. 
 
 ## Plot Map Components
 
@@ -445,13 +445,38 @@ knitr::include_url("figures/basic_graph.html")
 ```
 
 ```{r basic-graph-screenshot, fig.cap="A basic companion graph for speed. Visit the online version to see the interactive companion graph.", out.width='47.5%', include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-# saved manually as figures/basic_graph.html
 # webshot2::webshot(here::here("RJournal/figures/basic_graph.html"),
 #                   here::here("RJournal/figures/basic_graph.png"),
 #                   delay = 10,
 #                   zoom = 2)
 knitr::include_graphics("figures/basic_graph.png")
 ```
+
+Users can perform transformations within \pkg{DrivePlotR} function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made within the `driveplot_companion` function arguments. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
+
+```{r transform-graph-code, echo = TRUE, eval = FALSE}
+driveplot_companion(shareddata = shared_drive,
+                    x = as.POSIXct(time_cst, tz = "UTC"),
+                    y = speed_mph * 1.609,
+                    xlabel = "Time (UTC)",
+                    ylabel = "Speed (KPH)")
+```
+
+```{r transform-graph, fig.cap="A companion graph where time and speed have been transformed within the function arguments.", out.width='47.5%', include = knitr::is_html_output(), eval = knitr::is_html_output()}
+# Saved manually as RJournal/figures/transform_graph.html
+knitr::include_url("figures/transform_graph.html")
+```
+
+```{r transform-graph-screenshot, fig.cap="A basic companion graph where time and speed have been transformed within the function arguments. Visit the online version to see the interactive companion graph.", out.width='47.5%', include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+# webshot2::webshot(here::here("RJournal/figures/transform_graph.html"),
+#                   here::here("RJournal/figures/transform_graph.png"),
+#                   delay = 10,
+#                   zoom = 2)
+knitr::include_graphics("figures/transform_graph.png")
+```
+
+
+
 
 \pkg{DrivePlotR} offers many options to customize a plot map. For example, the following code was used to create the plot map in Figure \@ref(fig:teaser).
 
@@ -470,7 +495,7 @@ driveplot(shareddata = shared_drive,
 
 v. Save and share plot maps.
 
-\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. Another option is to manually save the \pkg{DrivePlotR} visualization from the RStudio Viewer pane.
+\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane.
 
 # Extensions/Limitations 
 
