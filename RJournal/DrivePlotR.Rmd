@@ -249,7 +249,7 @@ nds_data7 |>
 # nds_data16 <- nds_data16 |>
 #   mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
 #          gps_minute = as.factor(minute(time_cst)))
-# 
+
 # nds_data16 <- nds_data16 |> mutate(
 #   gps_heading_raw = gps_heading,
 #   gps_heading_diff = angle_dist(gps_heading, lag(gps_heading,1)),
@@ -271,7 +271,7 @@ nds_data7 |>
 # 
 # nds_sf16 <- nds_data16 |> sf::st_as_sf(coords = c("gps_long", "gps_lat"),
 #                                 crs = "WGS84")
-
+# 
 # nds_data16_sd <- crosstalk::SharedData$new(nds_data16)
 # nds_sf16_sd <- crosstalk::SharedData$new(nds_sf16)
 # left_turn_id <- driveplot(shareddata = nds_sf16_sd,
@@ -282,7 +282,7 @@ nds_data7 |>
 #                           colorpalette = "viridis",
 #                           xlabel = "Time (CST)",
 #                           ylabels = c("Speed (MPH)", "Gyro Heading",
-#                                       "Difference in Gyro Heading", "GPS PDOP"),
+#                                       "1 s Lagged Difference in Gyro Heading", "GPS PDOP"),
 #                           legendtitle = "Left Turn Behavior")
 # Saved manually as RJournal/figures/left_turn_id.html
 knitr::include_url("figures/left_turn_id.html")
@@ -290,7 +290,7 @@ knitr::include_url("figures/left_turn_id.html")
 
 ```{r leftturn-screenshot, fig.cap = "Identifying a left turn based on low speed and changes in heading. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
 
-#webshot2::webshot(here::here("RJournal/figures/left_turn_id.html"), "RJournal/figures/left_turn_id.png")
+#webshot2::webshot("figures/left_turn_id.html", "figures/left_turn_id.png", zoom = 2)
 knitr::include_graphics("figures/left_turn_id.png")
 ```
 
