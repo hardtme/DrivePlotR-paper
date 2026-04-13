@@ -401,7 +401,7 @@ data("drive7")
 
 ii. Establish the geographic variables and projection. Setting the coordinate reference system (CRS) to WGS84 is necessary to ensure that points are compatible with maps in Leaflet. This CRS is already set for the example dataset `drive7` included with \pkg{DrivePlotR}. The latitude and longitude coordinates in the example dataset `nds_data` included with \pkg{DrivePlotR} also already use the WGS84 CRS. Users may find that using functions from \CRANpkg{sf} makes it easier to set the CRS for their data, but \CRANpkg{sf} is not required to use \pkg{DrivePlotR}. 
 
-iii. Convert the data into a shared data frame using \CRANpkg{crosstalk}.
+iii. Convert the data into a shared data frame using \CRANpkg{crosstalk}. (If the user does not pass a shared data frame into a \pkg{DrivePlotR} function, the conversion will happen as part of the function call and the function will warn the user.)
 
 ```{r shareddata, echo=TRUE}
 shared_drive <- crosstalk::SharedData$new(drive7)
@@ -490,7 +490,7 @@ driveplot(shareddata = shared_drive,
           plottitle = "A Drive in Omaha, NE")
 ```
 
-As mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified. In the example in Figure , speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W). 
+As mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified. In the example in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-plotmap)', '\\@ref(fig:transform-plotmap-screenshot)'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W). 
 
 ```{r transform-plotmap-code, echo=TRUE, eval=FALSE}
 driveplot(
