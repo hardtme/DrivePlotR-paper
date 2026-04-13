@@ -114,13 +114,13 @@ The interface for the \pkg{DrivePlotR} functions is similar to the interface of 
 
 Users pass required mappings to the functions as bare expressions (i.e., without quotes). For example, the variable for the horizontal axis of the companion graph in the `driveplot_companion()` function must be given as `x = time_cst`, not `x = "time_cst"`. If a user provides a required mapping within quotes, the function will throw an error. We made this choice to simplify the function interface for the user and reduce typing. An additional benefit is that users can modify arguments within the \pkg{DrivePlotR} functions. For example, the user could convert from the US/Central time zone to UTC "on-the-fly" by specifying `x = as.POSIXct(time_cst, tz = "UTC")` within a call to`driveplot_companion()`. However, this non-standard evaluation increases the complexity of the function code on the backend. \pkg{DrivePlotR} handles non-standard evaluation using tidy evaluation from \CRANpkg{rlang} [@rlang].
 
-Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions()` and the `driveplot()` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). Our goal for doing this was to reduce confusion for the user when providing other function arguments (of which there are many). Users may modify the ys within the function arguments as well. For example, including `ys = c(speed_mph * 1.609, gyro_heading %% 360)` allows the user to convert the speed from miles per hour to kilometers per hour and ensure that the gyroscopic heading falls between 0 and 360, all within the call to `driveplot_companions()` or `driveplot()`. 
+Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions()` and the `driveplot()` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). Our goal for doing this was to reduce confusion for the user when providing other function arguments (of which there are many). Users may transform the ys within the function arguments as well. For example, including `ys = c(speed_mph * 1.60934, gyro_heading %% 360)` allows the user to convert the speed from miles per hour to kilometers per hour and ensure that the gyroscopic heading falls between 0 and 360, all within the call to `driveplot_companions()` or `driveplot()`. Examples of such transforms are shown in the DrivePlotR Workflow section.
 
 ## Plot Map Components
 
 ### Map
 
-The first component of \pkg{DrivePlotR} plot map visualizations is a map showing the GPS location of each point in the dataset. The function `driveplot_map()` creates these maps. Functions from \CRANpkg{leaflet}, the R interface to the Leaflet JavaScript library, are used to create this interactive map [@chengLeafletCreateInteractive2024]. Leaflet maps are user-friendly, allowing the user to zoom in and out and highlight points of particular interest using a selection box. Because of functionality from \CRANpkg{crosstalk}, any points selected on the map will also be selected on the companion graph(s). 
+Next, we discuss the components of \pkg{DrivePlotR} plot map visualizations. The first component is a map showing the GPS location of each point in the dataset. The function `driveplot_map()` creates these maps. Functions from \CRANpkg{leaflet}, the R interface to the Leaflet JavaScript library, are used to create this interactive map [@chengLeafletCreateInteractive2024]. Leaflet maps are user-friendly, allowing the user to zoom in and out and highlight points of particular interest using a selection box. Because of functionality from \CRANpkg{crosstalk}, any points selected on the map will also be selected on the companion graph(s). 
 
 Users can choose to have a label appear when they hover the cursor over points on the map. This optional label conveys additional information of the analyst's choice about the point, e.g., time, GPS coordinates, etc. In addition, \pkg{DrivePlotR} allows users to change the color of the points on the map to a particular color of their choice or to associate the color of the map points with a variable from the data. This color choice will also be applied to the companion graphs. For the color palettes, the user can choose from one of four viridis color palettes [@smithMatplotlibColormaps2015] as implemented in the \CRANpkg{viridisLite} R package [@garnierViridisLiteColorblindfriendlyColor2024]: viridis, magma, inferno, and plasma. These color palettes were chosen for their compatibility with both Leaflet and the \CRANpkg{ggplot2} package [@wickhamGgplot2ElegantGraphics2016], which is used in the creation of the companion graphs. The viridis color palettes provide other benefits as well.
 
@@ -475,9 +475,6 @@ knitr::include_url("figures/transform_graph.html")
 knitr::include_graphics("figures/transform_graph.png")
 ```
 
-
-
-
 \pkg{DrivePlotR} offers many options to customize a plot map. For example, the following code was used to create the plot map in Figure \@ref(fig:teaser).
 
 ```{r teaser-code, echo=TRUE, eval=FALSE}
@@ -493,7 +490,65 @@ driveplot(shareddata = shared_drive,
           plottitle = "A Drive in Omaha, NE")
 ```
 
-v. Save and share plot maps.
+As mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified. In the example in Figure , speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W). 
+
+```{r transform-plotmap-code, echo=TRUE, eval=FALSE}
+driveplot(
+  shareddata = shared_drive,
+  x = time_cst,
+  ys = c(
+    speed_mph * 1.60934,
+    c("N", "E", "S", "W")[findInterval(
+      (gyro_heading + 45) %% 360,
+      c(90, 180, 270)
+    ) + 1],
+    gps_pdop
+  ),
+  colorvar = gps_minute,
+  maplabel = time_cst,
+  colorpalette = "viridis",
+  xlabel = "Time",
+  ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
+  showlegend = TRUE,
+  legendtitle = "Minute",
+  plottitle = "A Drive in Omaha, NE"
+)
+```
+```{r transform-plotmap, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call.", include = knitr::is_html_output(), eval = knitr::is_html_output()}
+# driveplot(
+#   shareddata = shared_drive,
+#   x = time_cst,
+#   ys = c(
+#     speed_mph * 1.60934,
+#     c("N", "E", "S", "W")[findInterval(
+#       (gyro_heading + 45) %% 360,
+#       c(90, 180, 270)
+#     ) + 1],
+#     gps_pdop
+#   ),
+#   colorvar = gps_minute,
+#   maplabel = time_cst,
+#   colorpalette = "viridis",
+#   xlabel = "Time",
+#   ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
+#   showlegend = TRUE,
+#   legendtitle = "Minute",
+#   plottitle = "A Drive in Omaha, NE"
+# )
+# Saved manually as RJournal/figures/transform_plotmap.html using RStudio Viewer Export
+# webshot2::webshot(here::here("RJournal/figures/transform_plotmap.html"),
+#                   file = here::here("RJournal/figures/transform_plotmap.png"),
+#                   delay = 1,
+#                   zoom = 2)
+
+knitr::include_url("figures/transform_plotmap.html")
+```
+
+```{r transform-plotmap-screenshot, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+knitr::include_graphics("figures/transform_plotmap.png")
+```
+
+v. Save and share interactive plot maps.
 
 \pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane.
 
