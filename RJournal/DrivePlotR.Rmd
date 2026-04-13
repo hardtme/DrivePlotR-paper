@@ -374,9 +374,9 @@ knitr::include_graphics("figures/accel_event_right_turn_none.png")
 
 # DrivePlotR Workflow 
 
-This section outlines the basic workflow for making visualizations with \pkg{DrivePlotR}. The package contains four functions, each of which are used when creating an interactive plot map. The functions are
+This section outlines the basic workflow for making visualizations with \pkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
 
-* `driveplot()` (creates an interactive plot map by calling `driveplot_map()` and `driveplot_companions()`)
+* `driveplot()` (the primary function; creates an interactive plot map by calling `driveplot_map()` and `driveplot_companions()`)
 
 * `driveplot_map()` (creates an interactive map)
 
@@ -384,9 +384,9 @@ This section outlines the basic workflow for making visualizations with \pkg{Dri
 
 * `driveplot_companion()` (creates a single companion graph)
 
-The relationship between the \pkg{DrivePlotR} functions is shown in Figure \@ref(fig:functions).
+The relationship between the main \pkg{DrivePlotR} functions is shown in Figure \@ref(fig:functions). \pkg{DrivePlotR} also contains several internal helper functions that are not user-facing.
 
-```{r functions, fig.cap="The relationship between the DrivePlotR functions. The function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack."}
+```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack."}
 knitr::include_graphics("figures/function_hierarchy.png")
 ```
 
