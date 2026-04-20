@@ -2,7 +2,7 @@
 title: "DrivePlotR: Shareable Linked Plot Maps for Multivariate High-Resolution Spatio-Temporal Data"
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 abstract: >
-  An interactive visualization tool that produces linked plot maps for multivariate high resolution spatio-temporal data, such as data from naturalistic driving studies and connected vehicles, is introduced. Such interactive visualizations simplify the data analysis process by allowing users to explore the spatial, temporal, and multivariate aspects of the data simultaneously with one plot map. The DrivePlotR R package is described, use cases are discussed, examples are presented, and future extensions are suggested. 
+  We introduce the DrivePlotR R package, an interactive visualization tool that produces linked plot maps for multivariate high resolution spatio-temporal data, such as data from naturalistic driving studies and connected vehicles. Such interactive visualizations simplify the data analysis process by allowing users to explore the spatial, temporal, and multivariate aspects of the data simultaneously with one plot map. We describe the architecture of the package, provide example use cases, and suggest future extensions.
 draft: true
 author:  
   - name: Marie Hardt
