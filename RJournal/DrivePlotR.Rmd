@@ -371,7 +371,7 @@ knitr::include_graphics("figures/accel_event_right_turn_none.png")
 
 # DrivePlotR Workflow
 
-This section outlines the basic workflow for making visualizations with \pkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
+We now outline the basic workflow for making visualizations with \pkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
 
 -   `driveplot()` (the primary function; creates an interactive plot map by calling `driveplot_map()` and `driveplot_companions()`)
 
@@ -381,7 +381,7 @@ This section outlines the basic workflow for making visualizations with \pkg{Dri
 
 -   `driveplot_companion()` (creates a single companion graph)
 
-The relationship between the main \pkg{DrivePlotR} functions is shown in Figure \@ref(fig:functions). \pkg{DrivePlotR} also contains several internal helper functions that are not user-facing.
+We show the relationship between the main \pkg{DrivePlotR} functions in Figure \@ref(fig:functions). \pkg{DrivePlotR} also contains several internal helper functions that are not user-facing. We need these functions to ensure the four main functions of \pkg{DrivePlotR} work as expected.
 
 ```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack."}
 knitr::include_graphics("figures/function_hierarchy.png")
@@ -389,16 +389,16 @@ knitr::include_graphics("figures/function_hierarchy.png")
 
 Now, we describe the steps in a basic workflow for \pkg{DrivePlotR}.
 
-i.  Make the drive data available in the R session. Non-sensitive drives from a naturalistic driving study have been made available as part of the \pkg{DrivePlotR} package, but any other data with both geographic and temporal components would also be suitable. Recall that \pkg{DrivePlotR} expects one row for each observation in the data.
+i.  Make the drive data available in the R session. We make non-sensitive drives from a naturalistic driving study available as part of the \pkg{DrivePlotR} package, but any other data with both geographic and temporal components would also be suitable. Recall that \pkg{DrivePlotR} expects one row for each observation in the data.
 
 ```{r loaddata, echo=TRUE}
 library(DrivePlotR)
 data("drive7")
 ```
 
-ii. Establish the geographic variables and projection. Setting the coordinate reference system (CRS) to WGS84 is necessary to ensure that points are compatible with maps in Leaflet. This CRS is already set for the example dataset `drive7` included with \pkg{DrivePlotR}. The latitude and longitude coordinates in the example dataset `nds_data` included with \pkg{DrivePlotR} also already use the WGS84 CRS. Users may find that using functions from \CRANpkg{sf} makes it easier to set the CRS for their data, but \CRANpkg{sf} is not required to use \pkg{DrivePlotR}.
+ii. Establish the geographic variables and projection. Setting the coordinate reference system (CRS) to WGS84 is necessary to ensure that points are compatible with maps in Leaflet. We already set this CRS for the example dataset `drive7` included with \pkg{DrivePlotR}. The `drive7` dataset uses an \CRANpkg{sf} geometry column with type POINT. The latitude and longitude coordinates in the example dataset `nds_data` included with \pkg{DrivePlotR} also already use the WGS84 CRS. Users may find that using functions from \CRANpkg{sf} makes it easier to set the CRS for their data, but \CRANpkg{sf} is not required to use \pkg{DrivePlotR}.
 
-iii. Convert the data into a shared data frame using \CRANpkg{crosstalk}. (If the user does not pass a shared data frame into a \pkg{DrivePlotR} function, the conversion will happen as part of the function call and the function will warn the user.)
+iii. Convert the data into a shared data frame using \CRANpkg{crosstalk}. (If the user does not pass a shared data frame into a \pkg{DrivePlotR} function, we make the conversion as part of the function call and warn the user.)
 
 ```{r shareddata, echo=TRUE}
 shared_drive <- crosstalk::SharedData$new(drive7)
@@ -406,7 +406,7 @@ shared_drive <- crosstalk::SharedData$new(drive7)
 
 iv. Create plot maps with \pkg{DrivePlotR}.
 
-Although the main purpose of \pkg{DrivePlotR} is for users to create linked visualizations with a map and one to four companion graphs, users can also create maps or companion graphs separately. A basic standalone map, such as the one in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-map)', '\\@ref(fig:basic-map-screenshot)'))`, can be created as follows:
+Although our main intention for \pkg{DrivePlotR} is to create linked visualizations with a map and companion graphs, we also provide functions so users can create separate maps or companion graphs. A basic standalone map, such as the one in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-map)', '\\@ref(fig:basic-map-screenshot)'))`, can be created as follows:
 
 ```{r mapcode, echo=TRUE, eval=FALSE}
 driveplot_map(shareddata = shared_drive)
@@ -425,7 +425,7 @@ knitr::include_url("figures/basic_map.html")
 knitr::include_graphics("figures/basic_map.png")
 ```
 
-Users may also create standalone companion graphs. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
+We provide functionality to create standalone companion graphs in addtion to maps. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
 
 ```{r basic-graph-code, echo=TRUE, eval=FALSE}
 driveplot_companion(
@@ -450,7 +450,7 @@ knitr::include_url("figures/basic_graph.html")
 knitr::include_graphics("figures/basic_graph.png")
 ```
 
-Users can perform transformations within \pkg{DrivePlotR} function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made within the `driveplot_companion` function arguments. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
+We developed \pkg{DrivePlotR} so users could perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
 
 ```{r transform-graph-code, echo = TRUE, eval = FALSE}
 driveplot_companion(
@@ -475,7 +475,7 @@ knitr::include_url("figures/transform_graph.html")
 knitr::include_graphics("figures/transform_graph.png")
 ```
 
-\pkg{DrivePlotR} offers many options to customize a plot map. For example, the following code was used to create the plot map in Figure \@ref(fig:teaser).
+We offer \pkg{DrivePlotR} users many options to customize their plot maps. For example, the following code was used to create the plot map in Figure \@ref(fig:teaser).
 
 ```{r teaser-code, echo=TRUE, eval=FALSE}
 driveplot(
@@ -492,7 +492,7 @@ driveplot(
 )
 ```
 
-As mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified. In the example in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-plotmap)', '\\@ref(fig:transform-plotmap-screenshot)'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W).
+As we mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified within the function call. In the example in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-plotmap)', '\\@ref(fig:transform-plotmap-screenshot)'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W).
 
 ```{r transform-plotmap-code, echo=TRUE, eval=FALSE}
 driveplot(
@@ -553,10 +553,10 @@ knitr::include_graphics("figures/transform_plotmap.png")
 
 v.  Save and share interactive plot maps.
 
-\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane.
+\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane. \pkg{DrivePlotR} plot maps are incompatible with the `saveWidget` function from \CRANpkg{htmlwidgets} [@htmlwidgets].
 
 # Extensions/Limitations
 
-One current limitation of \pkg{DrivePlotR} is that color and position are the only possible ways to distinguish data points from each other. This means that it becomes difficult to differentiate more than a handful of distinct drives on the same plot map. In future extensions of \pkg{DrivePlotR}, it would be beneficial to include the option to change the shape of the points based on user preference or a variable in the dataset. This will enable \pkg{DrivePlotR} to better handle use cases where users need to differentiate multiple drives by the same driver or drives made by different drivers.
+One current limitation of \pkg{DrivePlotR} is that color and position are the only possible ways to distinguish data points from each other. This means that it becomes difficult to differentiate more than a handful of distinct drives on the same plot map. In future extensions of \pkg{DrivePlotR}, we would like to include the option to change the shape of the points based on user preference or a variable in the dataset. This will enable \pkg{DrivePlotR} to better handle use cases where users need to differentiate multiple drives by the same driver or drives made by different drivers.
 
-The ideas behind \pkg{DrivePlotR} visualizations are also applicable to other data sources. Similar visualizations as for NDS and CV data can be created for micromobility data from bicycles or scooters. For a precision agriculture application, \pkg{DrivePlotR} can create an interactive visualization of the GPS location and seeding rate for a tractor as it is driven through a field to plant this year's corn crop. \pkg{DrivePlotR} can also help analyze the paths and product application rates (e.g., salt) of snowplows as they clear roads during a blizzard. These are only a few of the possibilities for \pkg{DrivePlotR} visualizations.
+The ideas behind \pkg{DrivePlotR} visualizations are also applicable to other data sources. Similar visualizations as for NDS and CV data can be created for micromobility data from bicycles or scooters. We have also encountered interest in using \pkg{DrivePlotR} to create interactive visualizations for public transit systems, such as bus routes. For a precision agriculture application, \pkg{DrivePlotR} can create an interactive visualization of the GPS location and seeding rate for a tractor as it is driven through a field to plant this year's corn crop. \pkg{DrivePlotR} can also help analyze the paths and product application rates (e.g., salt) of snowplows as they clear roads during a blizzard. These are only a few of the possibilities for \pkg{DrivePlotR} visualizations to make multivariate high-resolution spatio-temporal data easier to understand and share.
