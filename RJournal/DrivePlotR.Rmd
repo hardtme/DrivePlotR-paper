@@ -76,7 +76,7 @@ We created \pkg{DrivePlotR} to provide self-contained, shareable linked visualiz
 
 In this article, we introduce \pkg{DrivePlotR}, an open-source dashboard for visualizing multivariate high resolution spatio-temporal data in linked plots. Figure \@ref(fig:teaser) shows a first example of using \pkg{DrivePlotR} to display DAS-captured data. \pkg{DrivePlotR} visualizations consist of a dashboard containing a map and corresponding charts showing additional measurements. While Figure \@ref(fig:teaser) is a static screenshot, \pkg{DrivePlotR} is an interactive web app that allows users to explore visualizations via linked highlighting. The code to create Figure \@ref(fig:teaser) is provided in [Section 5](#workflow).
 
-```{r teaser, fig.cap = "A screenshot of an interactive plot map created with DrivePlotR rendered as an HTML file in an internet browser."}
+```{r teaser, fig.cap = "A screenshot of an interactive plot map created with DrivePlotR rendered as an HTML file in an internet browser.", fig.alt = "An illustrative screenshot of a DrivePlotR plot map of a drive in Omaha, Nebraska, USA. A map on the left shows the vehicle's GPS trajectory with points colored by time as it heads east, then turns left and starts heading north. Three stacked plots on the right (also with points colored by time) display vehicle speed (MPH), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure) over time during the drive. The plots show changes in the variables as the vehicle stops, turns, and drives straight."}
 knitr::include_graphics("figures/figure1new.png")
 ```
 
@@ -96,7 +96,7 @@ We assume that datasets used with \pkg{DrivePlotR} have one row for each observa
 
 The \CRANpkg{crosstalk} package [@chengCrosstalkInterWidgetInteractivity2023] is the key to the interactivity of \pkg{DrivePlotR} visualizations. Before creating any \pkg{DrivePlotR} visualizations, the data to be visualized must first be converted into a shared data frame, which is an R6 class created using the `SharedData$new()` method from \CRANpkg{crosstalk}.
 
-```{r shared-data, fig.cap = "Sketch of the chain of reactive events triggered by (1) the user selecting a point on the map."}
+```{r shared-data, fig.cap = "Sketch of the chain of reactive events triggered by (1) the user selecting a point on the map.", fig.alt = "Diagram showing the chain of reactive events between a user's selection of a point on the map and the subsequent highlighting of the corresponding point in the data and the plots of speed (MPH), GPS heading (degrees), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure)." }
 knitr::include_graphics("figures/shared-data.png")
 ```
 
@@ -144,7 +144,7 @@ We use functions from \CRANpkg{ggplot2} [@wickhamGgplot2ElegantGraphics2016] to 
 
 A widely used convention for values representing angles is to report them in a bounded interval of width 360 degrees (or $2\pi$ radians). The interval of $[0, 360)$ (or $[0, 2\pi)$) corresponds to the first congruence class, and ensures that any mathematical calculations are well-defined. However, this restriction introduces discontinuities in the data that visually are very distracting, because they break two very basic (implicit) Gestalt principles of (1) continuity and (2) grouping. The violation of the first Gestalt principle is obvious. The grouping principle means that items shown in close proximity are expected to be close in the data, and correspondingly, items shown far apart are expected to be far apart in the data. If the car is driven at an angle close to $0^\circ$, the reported angles might fall in the two spatially separated intervals of $[0,5]$ degrees and $[355, 360)$ degrees. Visually, the separation between these intervals falsely suggests two clusters of data.
 
-```{r angles, fig.cap = "Raw direction (top) and continuity-corrected direction (bottom)."}
+```{r angles, fig.cap = "Raw direction (top) and continuity-corrected direction (bottom).", fig.alt="Two stacked time-series plots of vehicle heading angle over time. The top plot features the raw heading and includes abrupt jumps in heading when the vehicle drives north and the heading changes from small positive values near 0 degrees to values near 360 degrees. The bottom plot shows the corrected heading, for which the abrupt jumps have been smoothed."}
 nds_data7 <- nds_data |> filter(drive == 7)
 nds_data7 <- nds_data7 |>
   mutate(
@@ -171,7 +171,7 @@ nds_data7 |>
 
 As a remedy, consider that in the context of telematics data, trajectories are observed, i.e., temporal sequences of angles are available. Movement and the associated changes in directions are, by definition, continuous in time and space. In the example in Figure \@ref(fig:angles), the angles were only observed at a frequency of 1 Hz, but it is reasonable to assume that changes in one second fell within a range of $\pm 180^\circ$ (or $\pm \pi$) under regular driving conditions. This assumption allows us to apply a continuity-correction for angle variables by picking that congruence class for successive angles that keeps the (angle) distance to their predecessor below $\pm 180^\circ$. Figure \@ref(fig:angles) gives an example: both plots show the same directions over time, in the continuity-corrected version, the two segments with points "floating" at the top of the chart are moved below the horizontal line at $0^\circ$. In general, the continuity correction shifts angles by at most one congruence class up or down. Unless otherwise mentioned, all angle variables in this article are displayed using this continuity correction.
 
-```{r four-plots, fig.cap="Four companion graphs.", include = knitr::is_html_output(), eval = knitr::is_html_output()}
+```{r four-plots, fig.cap="Four companion graphs.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Four stacked time-series plots showing vehicle speed (MPH), GPS heading (degrees), gyroscropic heading (degrees) and GPS PDOP (a measure of GPS data quality). The second plot of GPS heading displays discontinuities, while the third plot of gyroscopic heading is much more consistent."}
 # nds_sf7 <- nds_data7 |>
 #   st_as_sf(coords = c("gps_long", "gps_lat"),
 #            crs = "WGS84")
@@ -213,7 +213,7 @@ In this section, we present three use cases for which we have used \pkg{DrivePlo
 
 Figure \@ref(fig:headings) shows an overlay of the direction in which a car is moving during one drive, measured by (a) GPS (gray points) and (b) inferred from gyroscopic motion (colored points). The expectation would be that these two direction measures should be highly correlated. However, in this case, there are surprisingly large differences between the measurements. In particular, when the car is standing or moving very slowly, the GPS measurements show drastic (and most likely confabulated) changes in direction. The gray bands in Figure \@ref(fig:headings) indicate periods of speeds of less than 2 miles an hour. When the car is moving at more than that speed, the gyroscopic heading and GPS measurements move in tandem. Thus, for this example, the gyroscopic heading is generally more consistent and thus preferred over the GPS heading.
 
-```{r headings, fig.cap="Comparison of two measures for a car's direction for one drive: colored points show gyroscopic heading (measured in the car), the gray points show heading as measured by GPS. When the speeds are low (gray rectangles), GPS heading shows dramatic changes."}
+```{r headings, fig.cap="Comparison of two measures for a car's direction for one drive: colored points show gyroscopic heading (measured in the car), the gray points show heading as measured by GPS. When the speeds are low (gray rectangles), GPS heading shows dramatic changes.", fig.alt="Time series plot of GPS heading (degrees) and gyroscopic heading (degrees). The GPS heading points are gray and the gyroscopic heading points are colored by the vehicle speed from 0 to just above 30 mph. At low speeds below 2 mph, the GPS heading shows drastic changes. At higher speeds, the GPS heading and the gyroscopic heading move together. This illustrates that GPS heading is particularly erratic at low speeds and gyroscopic heading is generally more consistent."}
 lowspeed_intervals <- nds_data7 |>
   mutate(
     low_speed = speed_mph < 1.75,
@@ -255,7 +255,7 @@ nds_data7 |>
 
 \pkg{DrivePlotR} visualizations allow users to highlight turns on the map and then examine the speed and heading for the associated points on the companion graphs. Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:leftturn)', '\\@ref(fig:leftturn-screenshot)'))` shows the whole drive, while Figure \@ref(fig:leftturnzoom) focuses on the left turn. Although the GPS PDOP values are less than 5 (and therefore fall into the range of values considered good enough for most applications), Figure \@ref(fig:leftturnzoom) shows that the vehicle trajectory points within the intersection where the turn occurred deviate from the road system. Geospatial turn identification will be ineffective in scenarios like this. However, in addition to geospatial patterns, turns are also associated with a decrease in speed and a change in heading. We can use these variables to detect turns.
 
-```{r leftturn, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output()}
+```{r leftturn, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from east to north of particular interest. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, waiting, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
 # Data for left turn identification example
 # nds_data16 <- nds_data |> filter(drive == 16)
 # nds_data16 <- nds_data16 |>
@@ -305,7 +305,7 @@ knitr::include_url("figures/left_turn_id.html")
 knitr::include_graphics("figures/left_turn_id.png")
 ```
 
-```{r leftturnzoom, fig.cap="Zooming in on the left turn."}
+```{r leftturnzoom, fig.cap="Zooming in on the left turn.", fig.alt="Zoomed-in view of the left turn of interest. On the left is a map of the vehicle trajectory at the intersection. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The plots highlight speed near 0 while the vehicle is waiting to turn. During the turn, there is a dip in the 1-second lag in the gyroscopic heading before resuming its flat pattern."}
 knitr::include_graphics("figures/left_turn_id_zoom.png")
 ```
 
@@ -313,7 +313,7 @@ knitr::include_graphics("figures/left_turn_id_zoom.png")
 
 Harsh acceleration and hard braking are undesirable driving behaviors that are known to be associated with unsafe driving conditions and otherwise avoidable vehicle wear-and-tear. In-vehicle accelerometers can monitor these events and flag when they occur. Detecting harsh acceleration and hard braking events may be of interest in the context of a naturalistic driving study. We show an example of part of an eastbound drive from an NDS that includes an acceleration event in Figure \@ref(fig:accel). For this NDS, an acceleration event was defined as having occurred if the absolute longitudinal (front-to-back) or lateral (side-to-side) acceleration of the vehicle exceeded 0.35g for at least 0.1 second, where the unit "g" is the acceleration due to gravity (1g = 9.81 $\text{m/s}^2$). Three severity categories were defined based on the level of absolute acceleration: low for absolute accelerations of 0.35g to 0.44g, medium for absolute accelerations of 0.45g to 0.59g, and high for absolute accelerations over 0.6g. In Figure \@ref(fig:accel), the companion graphs show the speed of the vehicle in miles per hour, as well as the longitudinal acceleration and the lateral acceleration of the vehicle. Figure \@ref(fig:accel) shows a medium acceleration event detected due to a sharp decrease in longitudinal acceleration, although the GPS coordinates and the decrease in speed of approximately 1 mile per hour in 1 second associated with the acceleration event indicate that this acceleration event is likely not of concern.
 
-```{r accel, fig.cap="A likely unproblematic acceleration event detected during part of a drive from a naturalistic driving study, where the unit g in the companion graph labels is the acceleration due to gravity."}
+```{r accel, fig.cap="A likely unproblematic acceleration event detected during part of a drive from a naturalistic driving study, where the unit g in the companion graph labels is the acceleration due to gravity.", fig.alt="Zoomed-in map and time series plots of vehicle speed (MPH) and longitudinal and lateral acceleration (both in g, i.e., acceleration due to gravity) showing a detected longitudinal acceleration event during a drive on a straight road. Although an acceleration event was detected, the GPS coordinates and the decrease in speed of approximately 1 MPH in 1 second associated with the event indicate that it is likely not of concern."}
 #
 # drive6 <- nds_data |> dplyr::filter(drive == 6)
 # drive6 <- drive6 |>
@@ -351,7 +351,7 @@ knitr::include_graphics("figures/accel_event_zoom_none.png")
 
 Figure \@ref(fig:rightturn) shows a low acceleration event detected during a different drive from the same NDS. This acceleration event was detected due to an increase in lateral acceleration above 0.35g. Although the recorded GPS points drifted away from the road system in this case, we can reasonably assume that the sharp angle of the intersection between the two streets forced the driver to make a sharp turn that showed up in the lateral acceleration data as a rapid increase above the threshold for acceleration event detection. Figure \@ref(fig:accel) and Figure \@ref(fig:rightturn) show that \pkg{DrivePlotR} visualizations can help identify whether detected acceleration events in vehicle trajectory data are problematic. Such insights can inform refinements of the thresholds used to detect and classify acceleration events.
 
-```{r rightturn, fig.cap="A lateral acceleration event detected before a sharp right turn."}
+```{r rightturn, fig.cap="A lateral acceleration event detected before a sharp right turn.", fig.alt="Zoomed-in map and time series plots of vehicle speed (MPH) and lateral acceleration (g, i.e., acceleration due to gravity) during a detected lateral acceleration event during a right turn at an intersection. The streets of the intersection cross each other at a sharp angle, indicating that the detected acceleration event is likely due to the intersection geometry and unlikely to be problematic."}
 # drive_right <- nds_data |> dplyr::filter(drive == 7)
 # drive_right <- drive_right |>
 #   sf::st_as_sf(coords = c("gps_long", "gps_lat"),
@@ -396,7 +396,7 @@ We now outline the basic workflow for making visualizations with \pkg{DrivePlotR
 
 We show the relationship between the main \pkg{DrivePlotR} functions in Figure \@ref(fig:functions). \pkg{DrivePlotR} also contains several internal helper functions that are not user-facing. We need these functions to ensure the four main functions of \pkg{DrivePlotR} work as expected.
 
-```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack."}
+```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack.", fig.alt="Diagram showing the relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions. The function driveplot\\_companions in turn calls driveplot\\_companion."}
 knitr::include_graphics("figures/function_hierarchy.png")
 ```
 
@@ -425,7 +425,7 @@ Although our main intention for \pkg{DrivePlotR} is to create linked visualizati
 driveplot_map(shareddata = shared_drive)
 ```
 
-```{r basic-map, fig.cap="A basic standalone map.", include = knitr::is_html_output(), eval = knitr::is_html_output()}
+```{r basic-map, fig.cap="A basic standalone map.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic map showing a vehicle trajectory as a sequence of blue points."}
 # Saved manually as RJournal/figures/basic_map.html
 knitr::include_url("figures/basic_map.html")
 ```
@@ -450,7 +450,7 @@ driveplot_companion(
 )
 ```
 
-```{r basic-graph, fig.cap="A basic companion graph for speed.", include = knitr::is_html_output(), eval = knitr::is_html_output()}
+```{r basic-graph, fig.cap="A basic companion graph for speed.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (MPH) over time. The points are all blue."}
 # saved manually as figures/basic_graph.html
 knitr::include_url("figures/basic_graph.html")
 ```
@@ -475,7 +475,7 @@ driveplot_companion(
 )
 ```
 
-```{r transform-graph, fig.cap="A companion graph where time and speed have been transformed within the function arguments.", include = knitr::is_html_output(), eval = knitr::is_html_output()}
+```{r transform-graph, fig.cap="A companion graph where time and speed have been transformed within the function arguments.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (KPH) over time. The transformation from MPH to KPH was performed in the function arguments. The points are all blue."}
 # Saved manually as RJournal/figures/transform_graph.html
 knitr::include_url("figures/transform_graph.html")
 ```
@@ -530,7 +530,7 @@ driveplot(
 )
 ```
 
-```{r transform-plotmap, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call.", include = knitr::is_html_output(), eval = knitr::is_html_output()}
+```{r transform-plotmap, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="A DrivePlotR plot map showing the same drive as in Figure 1. For this plot map, transformations were performed in the function arguments to convert speed from MPH to KPH and convert heading from degree values to general heading directions (N, S, E, W)."}
 # driveplot(
 #   shareddata = shared_drive,
 #   x = time_cst,
