@@ -177,7 +177,7 @@ As a remedy, consider that in the context of telematics data, trajectories are o
 #   st_as_sf(coords = c("gps_long", "gps_lat"),
 #            crs = "WGS84")
 # nds_sf7_sd <- SharedData$new(nds_sf7)
-#
+# 
 # four <- driveplot_companions(shareddata = nds_sf7_sd,
 #                              x = time_cst,
 #                              ys = c(speed_mph, gps_heading, gyro_heading, gps_pdop),
@@ -188,7 +188,7 @@ As a remedy, consider that in the context of telematics data, trajectories are o
 #                              showlegend = TRUE,
 #                              legendtitle = "Minute",
 #                              spacing = 0.05,
-#                              plotheight = '85vh'
+#                              plotheight = '100vh'
 #                              )
 
 # Saved manually as RJournal/figures/four_graphs.html using RStudio Viewer Export
@@ -262,7 +262,7 @@ nds_data7 |>
 # nds_data16 <- nds_data16 |>
 #   mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
 #          gps_minute = as.factor(minute(time_cst)))
-
+# 
 # nds_data16 <- nds_data16 |> mutate(
 #   gps_heading_raw = gps_heading,
 #   gps_heading_diff = angle_dist(gps_heading, lag(gps_heading,1)),
@@ -281,10 +281,10 @@ nds_data7 |>
 #                           between(time_cst, ymd_hms("2019-05-27 17:00:04", tz = "US/Central"), ymd_hms("2019-05-27 17:00:15", tz = "US/Central")) ~ "Turning", .default = "Unrelated"),
 #                        levels = c("Approach", "Waiting", "Turning", "Unrelated"))
 # )
-#
+# 
 # nds_sf16 <- nds_data16 |> sf::st_as_sf(coords = c("gps_long", "gps_lat"),
 #                                 crs = "WGS84")
-#
+# 
 # nds_data16_sd <- crosstalk::SharedData$new(nds_data16)
 # nds_sf16_sd <- crosstalk::SharedData$new(nds_sf16)
 # left_turn_id <- driveplot(shareddata = nds_sf16_sd,
@@ -610,6 +610,7 @@ driveplot(
   legendtitle = "Minute",
   plottitle = "A Drive in Omaha, NE"
 )
+# Saved manually as RJournal/figures/teaser.html using RStudio Viewer Export
 ```
 
 As we mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified within the function call. In the example in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-plotmap)', '\\@ref(fig:transform-plotmap-screenshot)'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W).
@@ -673,7 +674,7 @@ knitr::include_graphics("figures/transform_plotmap.png")
 
 v.  Save and share interactive plot maps.
 
-\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. When using RMarkdown or Quarto, we recommend explicitly setting the width and height of the plot map to prevent the visualization from stretching and occupying more space than desired. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane. \pkg{DrivePlotR} plot maps are incompatible with the `saveWidget` function from \CRANpkg{htmlwidgets} [@htmlwidgets].
+\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. When using RMarkdown or Quarto, we recommend explicitly setting the width and height of the plot map in the `width` and `height` arguments to the `driveplot` function to prevent the visualization from stretching and occupying more space than desired. Acceptable units include %, vh, vw, and px. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane. \pkg{DrivePlotR} plot maps are incompatible with the `saveWidget` function from \CRANpkg{htmlwidgets} [@htmlwidgets].
 
 # Extensions/Limitations {#extensions}
 
