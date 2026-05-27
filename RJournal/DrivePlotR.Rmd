@@ -354,6 +354,59 @@ left_turn_id_alt1 <- driveplot(shareddata = nds_sf23_sd,
 
 ```
 
+```{r leftturnalt2, eval = FALSE, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from east to north of particular interest. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
+# Data for an alternate left turn identification example
+nds_data24 <- nds_data |> 
+  filter(drive == 24)
+nds_data24 <- nds_data24 |>
+  mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
+         gps_minute = as.factor(minute(time_cst)))
+
+nds_data24 <- nds_data24 |> mutate(
+  gyro_heading = gps_heading_raw[1] - cumsum(gyro_z),
+  gyro_heading_lag = lag(gyro_heading, n = 1),
+  gyro_heading_lead = lead(gyro_heading, n = 1),
+  fprime = (gyro_heading_lead - gyro_heading_lag)/2,
+  sign_fprime = sign(fprime),
+  sign_fprime_change_counter = consecutive_id(sign_fprime),
+  turn_aspect = factor(case_when(
+    between(time_cst, ymd_hms("2019-05-29 09:05:52", tz = "US/Central"), ymd_hms("2019-05-29 09:05:56", tz = "US/Central")) ~ "Approach",
+    between(time_cst, ymd_hms("2019-05-29 09:05:57", tz = "US/Central"), ymd_hms("2019-05-29 09:06:02", tz = "US/Central")) ~ "Turning",
+   .default = "Unrelated"),
+   levels = c("Approach", "Turning", "Unrelated"))
+)
+
+nds_data24_candidates <- nds_data24 |> 
+    group_by(sign_fprime_change_counter, sign_fprime) |> 
+    summarize(n = n(),
+              min_time_cst = min(time_cst),
+              max_time_cst = max(time_cst),
+              gyro_heading_change = last(gyro_heading) - first(gyro_heading),
+              start_speed = first(speed_mph),
+              end_speed = last(speed_mph),
+              avg_speed = mean(speed_mph),
+              start_lat = first(gps_lat),
+              start_lng = first(gps_long),
+              .groups = "keep"
+         )
+
+nds_sf24 <- nds_data24 |> 
+  sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+               crs = "WGS84")
+
+nds_sf24_sd <- crosstalk::SharedData$new(nds_sf24)
+left_turn_id_alt2 <- driveplot(shareddata = nds_sf24_sd,
+                               x = time_cst,
+                               ys = c(speed_mph, gyro_heading, gps_pdop),
+                               colorvar = turn_aspect,
+                               maplabel = time_cst,
+                               colorpalette = "viridis",
+                               xlabel = "Time (CST)",
+                               ylabels = c("Speed (MPH)", "Gyro Heading","GPS PDOP"),
+                               legendtitle = "Left Turn Behavior")
+
+```
+
 ```{r leftturn-screenshot, fig.cap = "Identifying a left turn based on low speed and changes in heading. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
 # webshot2::webshot("figures/left_turn_id.html", "figures/left_turn_id.png", zoom = 2)
 knitr::include_graphics("figures/left_turn_id.png")
