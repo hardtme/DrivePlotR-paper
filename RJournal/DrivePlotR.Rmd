@@ -610,8 +610,8 @@ driveplot(
   legendtitle = "Minute",
   plottitle = "A Drive in Omaha, NE"
 )
-# Saved manually as RJournal/figures/teaser.html using RStudio Viewer Export
 ```
+<!-- Saved manually as RJournal/figures/teaser.html using RStudio Viewer Export -->
 
 As we mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified within the function call. In the example in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-plotmap)', '\\@ref(fig:transform-plotmap-screenshot)'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W).
 
