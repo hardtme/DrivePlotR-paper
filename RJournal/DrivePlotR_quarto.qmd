@@ -34,12 +34,9 @@ output:
 bibliography: RJreferences.bib
 ---
 
-```{r render, include = FALSE, eval = FALSE}
-pandoc::pandoc_activate(version = "3.1.6")
-rmarkdown::render("RJournal/DrivePlotR.Rmd", output_format = "all")
-```
-
-```{r setup, include=FALSE}
+```{r}
+#| label: setup
+#| include: false
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, out.width = "100%")
 library(DrivePlotR)
 library(tidyverse)
@@ -62,7 +59,7 @@ We want to visualize both the geospatial and temporal aspects of vehicle traject
 
 R Shiny apps [@shiny] are easy-to-use interactive web applications that can incorporate linked interactive visualizations like those produced by DrivePlotR. R Shiny is also an appealing option because it is free, open-source software that uses code to generate the visualizations shown in the app instead of a drag-and-drop user interface. R Shiny apps are reproducible and easy to modify. However, R Shiny apps must be hosted on the web for the interactive visualizations to be shared with others. Web hosting makes sharing visualizations more complicated and introduces data privacy concerns.
 
-For us, a large motivation for creating DrivePlotR is the possibility of easily sharing linked interactive visualizations of vehicle trajectory data with collaborators while maintaining data privacy. Given the sensitive nature of the data from the naturalistic driving study we are analyzing, we are under strict requirements from the ethics board to preserve the privacy of participants. Tableau dashboards typically need to be shared within a Tableau user group or hosted publicly [@tableau]. Thus, it is difficult to share Tableau dashboards with external collaborators while still maintaining privacy. R Shiny apps [@shiny] and their web hosting requirements present similar problems. Table \@ref(tab:comparison) compares the capabilities of DrivePlotR, R Shiny, and Tableau regarding the features we need.
+For us, a large motivation for creating DrivePlotR is the possibility of easily sharing linked interactive visualizations of vehicle trajectory data with collaborators while maintaining data privacy. Given the sensitive nature of the data from the naturalistic driving study we are analyzing, we are under strict requirements from the ethics board to preserve the privacy of participants. Tableau dashboards typically need to be shared within a Tableau user group or hosted publicly [@tableau]. Thus, it is difficult to share Tableau dashboards with external collaborators while still maintaining privacy. R Shiny apps [@shiny] and their web hosting requirements present similar problems. @tbl-comparison compares the capabilities of DrivePlotR, R Shiny, and Tableau regarding the features we need.
 
 | Feature                  | DrivePlotR   | R Shiny   | Tableau   |
 |--------------------------|--------------|-----------|-----------|
@@ -70,17 +67,22 @@ For us, a large motivation for creating DrivePlotR is the possibility of easily 
 | No hosting required      | Yes          | No        | No        |
 | Fully reproducible       | Yes          | Yes       | No        |
 | Privacy-friendly sharing | Yes          | No        | No        |
-Table: (\#tab:comparison) A comparison of the features of DrivePlotR, R Shiny, and Tableau relating to our needs.
+
+: A comparison of the features of DrivePlotR, R Shiny, and Tableau relating to our needs. {#tbl-comparison}
 
 We created DrivePlotR to provide self-contained, shareable linked visualizations (map + time series) without requiring a hosted environment, enabling privacy-preserving analysis of high-resolution vehicle trajectory data. We developed DrivePlotR to help in our analyses and the explanation of our results while maintaining reproducibility and data privacy. Please note that the driving data shown in all of the visualizations shown in this article are not sensitive in nature and can be freely shared.
 
-In this article, we introduce DrivePlotR, an open-source dashboard for visualizing multivariate high resolution spatio-temporal data in linked plots. Figure \@ref(fig:teaser) shows a first example of using DrivePlotR to display DAS-captured data. DrivePlotR visualizations consist of a dashboard containing a map and corresponding charts showing additional measurements. While Figure \@ref(fig:teaser) is a static screenshot, DrivePlotR is an interactive web app that allows users to explore visualizations via linked highlighting. The code to create Figure \@ref(fig:teaser) is provided in [Section 5](#workflow).
+In this article, we introduce DrivePlotR, an open-source dashboard for visualizing multivariate high resolution spatio-temporal data in linked plots. @fig-teaser shows a first example of using DrivePlotR to display DAS-captured data. DrivePlotR visualizations consist of a dashboard containing a map and corresponding charts showing additional measurements. While @fig-teaser is a static screenshot, DrivePlotR is an interactive web app that allows users to explore visualizations via linked highlighting. The code to create @fig-teaser is provided in @sec-workflow.
 
-```{r teaser, fig.cap = "A screenshot of an interactive plot map created with DrivePlotR rendered as an HTML file in an internet browser.", fig.alt = "An illustrative screenshot of a DrivePlotR plot map of a drive in Omaha, Nebraska, USA. A map on the left shows the vehicle's GPS trajectory with points colored by time as it heads east, then turns left and starts heading north. Three stacked plots on the right (also with points colored by time) display vehicle speed (MPH), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure) over time during the drive. The plots show changes in the variables as the vehicle stops, turns, and drives straight."}
+```{r}
+#| label: fig-teaser
+#| fig-cap: "A screenshot of an interactive plot map created with DrivePlotR rendered as an HTML file in an internet browser."
+#| fig-alt: "An illustrative screenshot of a DrivePlotR plot map of a drive in Omaha, Nebraska, USA. A map on the left shows the vehicle's GPS trajectory with points colored by time as it heads east, then turns left and starts heading north. Three stacked plots on the right (also with points colored by time) display vehicle speed (MPH), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure) over time during the drive. The plots show changes in the variables as the vehicle stops, turns, and drives straight."
+
 knitr::include_graphics("figures/figure1new.png")
 ```
 
-The outline of this article is as follows. In [Section 2](#background), we describe the relevant methodologies we brought together to create DrivePlotR. We discuss all the DrivePlotR plot map components shown in Figure \@ref(fig:teaser)in [Section 3](#plotmap). Then, we highlight some use cases of DrivePlotR in [Section 4](#usecases) and demonstrate a typical DrivePlotR workflow in [Section 5](#workflow). Lastly, we discuss possible extensions for future versions of DrivePlotR in [Section 6](#extensions).
+The outline of this article is as follows. In [Section 2](#background), we describe the relevant methodologies we brought together to create DrivePlotR. We discuss all the DrivePlotR plot map components shown in @fig-teaser in [Section 3](#plotmap). Then, we highlight some use cases of DrivePlotR in [Section 4](#usecases) and demonstrate a typical DrivePlotR workflow in [Section 5](#workflow). Lastly, we discuss possible extensions for future versions of DrivePlotR in [Section 6](#extensions).
 
 # Background {#background}
 
@@ -96,11 +98,15 @@ We assume that datasets used with DrivePlotR have one row for each observation. 
 
 The crosstalk package [@chengCrosstalkInterWidgetInteractivity2023] is the key to the interactivity of DrivePlotR visualizations. Before creating any DrivePlotR visualizations, the data to be visualized must first be converted into a shared data frame, which is an R6 class created using the `SharedData$new()` method from crosstalk.
 
-```{r shared-data, fig.cap = "Sketch of the chain of reactive events triggered by (1) the user selecting a point on the map.", fig.alt = "Diagram showing the chain of reactive events between a user's selection of a point on the map and the subsequent highlighting of the corresponding point in the data and the plots of speed (MPH), GPS heading (degrees), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure)." }
+```{r}
+#| label: fig-shared-data
+#| fig-cap: "Sketch of the chain of reactive events triggered by (1) the user selecting a point on the map."
+#| fig-alt: "Diagram showing the chain of reactive events between a user's selection of a point on the map and the subsequent highlighting of the corresponding point in the data and the plots of speed (MPH), GPS heading (degrees), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure)."
+
 knitr::include_graphics("figures/shared-data.png")
 ```
 
-`SharedData` objects are augmented data frames, with explicit key variables (here, an ID for each observation) and a list of all objects that use the data. Together, these augmentations facilitate linked highlighting by communicating the selection state and changes to the selection state across visualizations made with the same `SharedData` object [@chengCrosstalkInterWidgetInteractivity2023]. Figure \@ref(fig:shared-data) shows an example of the reactive chain triggered when a user selects a point on the map. To the user, this interaction looks like an immediate highlighting of one observation in all the plots in DrivePlotR by fading out the other points. What is actually happening is a chain of actions triggered by the user's selection. In a "live" chart, selecting a point (1) triggers a so-called "mouseover" event, which (2) redraws that point in the highlighting style. This (3) changes the selection status of that point in the `SharedData` object to "highlighted." This change triggers an update in all of the dependent objects (the other plots that use the dataset), which in turn (4) re-draw all of the appearances of the highlighted point to match the map. Linked highlighting creates perceptual groups of points across plots, because all highlighted points share a common fate (as long as highlighting happens immediately). In addition, the immediacy of place also ties the group to the location of the selected point.
+`SharedData` objects are augmented data frames, with explicit key variables (here, an ID for each observation) and a list of all objects that use the data. Together, these augmentations facilitate linked highlighting by communicating the selection state and changes to the selection state across visualizations made with the same `SharedData` object [@chengCrosstalkInterWidgetInteractivity2023]. @fig-shared-data shows an example of the reactive chain triggered when a user selects a point on the map. To the user, this interaction looks like an immediate highlighting of one observation in all the plots in DrivePlotR by fading out the other points. What is actually happening is a chain of actions triggered by the user's selection. In a "live" chart, selecting a point (1) triggers a so-called "mouseover" event, which (2) redraws that point in the highlighting style. This (3) changes the selection status of that point in the `SharedData` object to "highlighted." This change triggers an update in all of the dependent objects (the other plots that use the dataset), which in turn (4) re-draw all of the appearances of the highlighted point to match the map. Linked highlighting creates perceptual groups of points across plots, because all highlighted points share a common fate (as long as highlighting happens immediately). In addition, the immediacy of place also ties the group to the location of the selected point.
 
 ## Interactivity {#interactivity}
 
@@ -487,7 +493,7 @@ Figure \@ref(fig:rightturn) shows a low acceleration event detected during a dif
 knitr::include_graphics("figures/accel_event_right_turn_none.png")
 ```
 
-# DrivePlotR Workflow {#workflow}
+# DrivePlotR Workflow {#sec-workflow}
 
 We now outline the basic workflow for making visualizations with DrivePlotR. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
 
