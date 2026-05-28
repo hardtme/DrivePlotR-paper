@@ -545,7 +545,7 @@ knitr::include_url("figures/basic_map.html")
 knitr::include_graphics("figures/basic_map.png")
 ```
 
-We provide functionality to create standalone companion graphs in addtion to maps. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
+We provide functionality to create standalone companion graphs in addition to maps. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
 
 ```{r basic-graph-code, echo=TRUE, eval=FALSE}
 driveplot_companion(
