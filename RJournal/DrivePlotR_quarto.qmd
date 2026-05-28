@@ -1,0 +1,684 @@
+---
+title: "DrivePlotR: Shareable Linked Plot Maps for Multivariate High-Resolution Spatio-Temporal Data"
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+abstract: >
+  Intelligent transportation systems rely on multivariate high-resolution spatio-temporal data like vehicle trajectories. An increasing number of vehicles are manufactured with telemetric data acquisition systems onboard. GPS units, dashboard cameras, and smart phones are alternative ways to collect vehicle trajectory data. Connected vehicle data and naturalistic driving studies represent sources of this type of data. DrivePlotR is an open-source dashboard for visualizing multivariate high resolution spatio-temporal data in linked plots. Linking allows us to render both the geospatial and temporal aspects of vehicle trajectory data in low-dimensional displays and connect their multivariate relationships. DrivePlotR provides self-contained, shareable linked visualizations without requiring a hosted environment, enabling privacy-preserving analysis of high-resolution vehicle trajectory data. In this article, we introduce the functionality of DrivePlotR, showcase applications, and discuss possible extensions for future versions.
+draft: true
+author:  
+  - name: Marie Hardt
+    affiliation: Iowa State University
+    address:
+    - Department of Statistics
+    - Ames, IA, USA
+    orcid: 0009-0001-8548-9866
+    email:  hardtme@iastate.edu
+  - name: Heike Hofmann
+    affiliation:
+    - University of Nebraska-Lincoln
+    address:
+    - Department of Statistics
+    - Lincoln, NE, USA 
+    email: hhofmann4@unl.edu
+    orcid: 0000-0001-6216-5183
+  - name: Guillermo Basulto-Elias
+    affiliation:
+    - Iowa State University
+    address:
+    - Institute for Transportation
+    - Ames, IA, USA
+    email: basulto@iastate.edu
+    orcid: 0000-0002-5205-2190
+type: package
+output:
+  rjtools::rjournal_article
+bibliography: RJreferences.bib
+---
+
+```{r render, include = FALSE, eval = FALSE}
+pandoc::pandoc_activate(version = "3.1.6")
+rmarkdown::render("RJournal/DrivePlotR.Rmd", output_format = "all")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, out.width = "100%")
+library(DrivePlotR)
+library(tidyverse)
+library(gpsdriving)
+library(sf)
+library(crosstalk)
+options(tinytex.verbose = TRUE)
+```
+
+# Introduction {#introduction}
+
+Vehicle trajectory data are a type of multivariate high-resolution spatio-temporal data that represent an essential data source for intelligent transportation systems. Such trajectory data have many applications, including traffic management and safety. Connected vehicle (CV) data are one source of vehicle trajectory data. These data are obtainable from third-party vendors that collaborate with vehicle original equipment manufacturers (OEMs) to ensure that vehicles incorporate the necessary technology for data collection. In CV data, a vehicle trajectory consists of all recorded observations during a single drive from when the vehicle is turned on to when it is turned off. Observations are typically taken every few seconds. In addition to the vehicle's geographic position in latitude and longitude, CV data records generally include the timestamp, the current speed, and the vehicle's heading (direction) in $[0, 360)$ degrees with true north at 0 degrees and increasing clockwise. An (anonymous) identifier connects observations for the same vehicle to its trajectory. Complete spatio-temporal trajectories for individual vehicles may therefore be found by grouping the observations by trajectory identifier and then sorting by time. CV data are used in a variety of applications, including evaluating traffic signal performance [@saldivar-carranzaNextGenerationTraffic2023], monitoring delays at land border crossings between the United States and Mexico [@sakhareMethodologyMonitoringBorder2024], and detecting freeway crashes in real time [@kandiboinaRealTimeFreewayCrash2024].
+
+Naturalistic driving studies (NDS) are another source of multivariate high-resolution spatio-temporal driving data. For example, consider the NDS administered by the Transportation Research Board of the National Academies as part of the Second Strategic Highway Research Program (SHRP 2). The SHRP 2 NDS aimed to understand the effect of driver performance and behavior on traffic safety. For the SHRP 2 NDS, volunteers from six different US states consented to have a data acquisition system (DAS) installed in their vehicles to monitor and record their driving behavior during the study period. The DAS involved multiple data collection channels, including video cameras, GPS (Global Positioning System) receivers, and accelerometers. The telematics data collected in the SHRP 2 NDS include many of the same variables collected in CV data [@campbellSHRP2Naturalistic2012]. @hallmarkEvaluationDrivingBehavior2015 used SHRP 2 NDS data to evaluate drivers' behavior on curves in rural 2-lane roads and assess the risk of drivers departing the roadway under different conditions. In the years since SHRP 2, other naturalistic driving studies have been conducted using more advanced data collection technology. @basulto-eliasStrategySafetyStop2023 used data collected during a recent NDS conducted by the University of Nebraska Medical Center to evaluate the scanning and stopping behaviors of older drivers at stop-controlled intersections.
+If a vehicle does not have an installed DAS, trajectory data can be obtained from devices located in the vehicle cabin, e.g., GPS units, dashboard cameras, and smart phones. In the case of GPS units and dashboard cameras, the manufacturer may have software to facilitate the extraction and analysis of the trajectory data. Smart phone app developers do the same. However, this proprietary software may incur a cost and not provide all desired functionality, particularly for data visualization.
+
+Regardless of source, vehicle trajectory data are complex, with spatio-temporal and multivariate aspects. This complexity presents a particular set of challenges in data visualization, which is an essential step in any preliminary data analysis. Ideally, we want to visualize and review both the spatio-temporal and multivariate elements of the data simultaneously. The process for doing so is not always straightforward.
+
+We want to visualize both the geospatial and temporal aspects of vehicle trajectory data in low-dimensional displays and render their multivariate relationships simultaneously. We are particularly interested in data visualization tools that enable linked highlighting [@fisherkellerPRIM9InteractiveMultidimensional1974film; @fisherkellerPRIM9InteractiveMultidimensional1974; @beckerDynamicGraphicsData1987; @clevelandDynamicGraphics1988; @willsLinkedDataViews2008]. Tableau [-@tableau] is a popular tool known for creating interactive visualizations and dashboards using a drag-and-drop user interface. It is possible to use Tableau to create linked interactive visualizations similar to those we produce using \pkg{DrivePlotR}. However, modifications to an existing Tableau dashboard, such as creating new variables and including them in the visualizations, are, at best, inconvenient and, at worst, impossible. Thus, we prefer to generate visualizations with code to simplify updates and enhance reproducibility. In addition, Tableau is proprietary software, with a cost that provides a barrier for some analysts. 
+
+R Shiny apps [@shiny] are easy-to-use interactive web applications that can incorporate linked interactive visualizations like those produced by \pkg{DrivePlotR}. R Shiny is also an appealing option because it is free, open-source software that uses code to generate the visualizations shown in the app instead of a drag-and-drop user interface. R Shiny apps are reproducible and easy to modify. However, R Shiny apps must be hosted on the web for the interactive visualizations to be shared with others. Web hosting makes sharing visualizations more complicated and introduces data privacy concerns.
+
+For us, a large motivation for creating \pkg{DrivePlotR} is the possibility of easily sharing linked interactive visualizations of vehicle trajectory data with collaborators while maintaining data privacy. Given the sensitive nature of the data from the naturalistic driving study we are analyzing, we are under strict requirements from the ethics board to preserve the privacy of participants. Tableau dashboards typically need to be shared within a Tableau user group or hosted publicly [@tableau]. Thus, it is difficult to share Tableau dashboards with external collaborators while still maintaining privacy. R Shiny apps [@shiny] and their web hosting requirements present similar problems. Table \@ref(tab:comparison) compares the capabilities of \pkg{DrivePlotR}, R Shiny, and Tableau regarding the features we need.
+
+| Feature                  | DrivePlotR   | R Shiny   | Tableau   |
+|--------------------------|--------------|-----------|-----------|
+| Linked plots             | Yes          | Yes       | Yes       |
+| No hosting required      | Yes          | No        | No        |
+| Fully reproducible       | Yes          | Yes       | No        |
+| Privacy-friendly sharing | Yes          | No        | No        |
+Table: (\#tab:comparison) A comparison of the features of \pkg{DrivePlotR}, R Shiny, and Tableau relating to our needs.
+
+We created \pkg{DrivePlotR} to provide self-contained, shareable linked visualizations (map + time series) without requiring a hosted environment, enabling privacy-preserving analysis of high-resolution vehicle trajectory data. We developed \pkg{DrivePlotR} to help in our analyses and the explanation of our results while maintaining reproducibility and data privacy. Please note that the driving data shown in all of the visualizations shown in this article are not sensitive in nature and can be freely shared.
+
+In this article, we introduce \pkg{DrivePlotR}, an open-source dashboard for visualizing multivariate high resolution spatio-temporal data in linked plots. Figure \@ref(fig:teaser) shows a first example of using \pkg{DrivePlotR} to display DAS-captured data. \pkg{DrivePlotR} visualizations consist of a dashboard containing a map and corresponding charts showing additional measurements. While Figure \@ref(fig:teaser) is a static screenshot, \pkg{DrivePlotR} is an interactive web app that allows users to explore visualizations via linked highlighting. The code to create Figure \@ref(fig:teaser) is provided in [Section 5](#workflow).
+
+```{r teaser, fig.cap = "A screenshot of an interactive plot map created with DrivePlotR rendered as an HTML file in an internet browser.", fig.alt = "An illustrative screenshot of a DrivePlotR plot map of a drive in Omaha, Nebraska, USA. A map on the left shows the vehicle's GPS trajectory with points colored by time as it heads east, then turns left and starts heading north. Three stacked plots on the right (also with points colored by time) display vehicle speed (MPH), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure) over time during the drive. The plots show changes in the variables as the vehicle stops, turns, and drives straight."}
+knitr::include_graphics("figures/figure1new.png")
+```
+
+The outline of this article is as follows. In [Section 2](#background), we describe the relevant methodologies we brought together to create \pkg{DrivePlotR}. We discuss all the \pkg{DrivePlotR} plot map components shown in Figure \@ref(fig:teaser)in [Section 3](#plotmap). Then, we highlight some use cases of \pkg{DrivePlotR} in [Section 4](#usecases) and demonstrate a typical \pkg{DrivePlotR} workflow in [Section 5](#workflow). Lastly, we discuss possible extensions for future versions of \pkg{DrivePlotR} in [Section 6](#extensions).
+
+# Background {#background}
+
+Figure \@ref(fig:teaser) shows an example visualization created with the `driveplot()` function from \pkg{DrivePlotR}. The left-hand side of Figure \@ref(fig:teaser) lays out the trajectory of a drive in Omaha, Nebraska, USA, that occurred on May 26, 2019. Each point represents the vehicle's geospatial location for each second of the drive. The colors on the map (and the corresponding colors on the companion graphs on the right-hand side) denote each minute of the drive, allowing viewers to gain a better understanding of the drive's temporal component and the direction in which the drive was taken.
+
+The three stacked graphs on the right-hand side of Figure \@ref(fig:teaser) show three time series with data related to the drive. From top to bottom, the stacked graphs display the vehicle's current speed (miles per hour), its direction (heading) in degrees, and GPS PDOP (Position Dilution of Position). DOP values capture the relative positions of the GPS satellites and give an indication of the quality of the GPS data for each second. DOP is a variance measure, and therefore a lower DOP coefficient indicates better GPS data quality. DOP coefficient values of 5 and below are typically considered good enough for most applications involving navigation in an urban environment [@isikIntegrityAnalysisGPSBased2020]. In the example drive shown in Figure \@ref(fig:teaser), the PDOP values are all well below 3, indicating that the GPS data are likely of adequate quality. However, GPS data should be approached cautiously, as even data with low PDOP may still show anomalies. We will discuss this issue in [Section 4.1](#gps).
+
+The interface of \pkg{DrivePlotR} visualizations consists of four components: the map, the companion graph(s), the infrastructure linking the visuals and enabling the interactivity, and the non-standard evaluation used within the package functions. Users can see the first two components (map and companion graph) through the interactive plot maps produced by \pkg{DrivePlotR}. The third and fourth components (infrastructure and non-standard evaluation) exist within the \pkg{DrivePlotR} codebase. Although invisible to the user, the infrastructure is the key component that controls the linked interactive plot maps produced by \pkg{DrivePlotR}. As a preliminary step, we detail the necessary data format to create \pkg{DrivePlotR} plot maps in [Section 2.1](#data). Afterward, in [Section 2.2](#interactivity), we describe the infrastructure component that enables the linked interactivity of \pkg{DrivePlotR} plot maps. Then we discuss the non-standard evaluation component used within \pkg{DrivePlotR} in [Section 2.3](#nse). We explain the creation of the map and the companion graph(s) components later on in [Section 3.1](#map) and [Section 3.2](#companions).
+
+## Data Format {#data}
+
+We assume that datasets used with \pkg{DrivePlotR} have one row for each observation. For example, if the data source is a DAS installed in a vehicle that records data every second, each row in the dataset represents one second during the drive. For each observation, the GPS coordinates (longitude and latitude in decimal degrees) are available, along with other information such as the vehicle's speed, heading, acceleration, etc. \pkg{DrivePlotR} accepts datasets with explicit longitude and latitude columns as well as datasets with a simple features geometry column, such as datasets in the format from \CRANpkg{sf} [@pebesmaSpatialDataScience2023]. If a simple features geometry column is present in the data, \pkg{DrivePlotR} assumes that the geometry type for the column is POINT because each row represents a single point in time and space. Other geometry types are incompatible with \pkg{DrivePlotR} plot maps and will cause errors.
+
+The \CRANpkg{crosstalk} package [@chengCrosstalkInterWidgetInteractivity2023] is the key to the interactivity of \pkg{DrivePlotR} visualizations. Before creating any \pkg{DrivePlotR} visualizations, the data to be visualized must first be converted into a shared data frame, which is an R6 class created using the `SharedData$new()` method from \CRANpkg{crosstalk}.
+
+```{r shared-data, fig.cap = "Sketch of the chain of reactive events triggered by (1) the user selecting a point on the map.", fig.alt = "Diagram showing the chain of reactive events between a user's selection of a point on the map and the subsequent highlighting of the corresponding point in the data and the plots of speed (MPH), GPS heading (degrees), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure)." }
+knitr::include_graphics("figures/shared-data.png")
+```
+
+`SharedData` objects are augmented data frames, with explicit key variables (here, an ID for each observation) and a list of all objects that use the data. Together, these augmentations facilitate linked highlighting by communicating the selection state and changes to the selection state across visualizations made with the same `SharedData` object [@chengCrosstalkInterWidgetInteractivity2023]. Figure \@ref(fig:shared-data) shows an example of the reactive chain triggered when a user selects a point on the map. To the user, this interaction looks like an immediate highlighting of one observation in all the plots in \pkg{DrivePlotR} by fading out the other points. What is actually happening is a chain of actions triggered by the user's selection. In a "live" chart, selecting a point (1) triggers a so-called "mouseover" event, which (2) redraws that point in the highlighting style. This (3) changes the selection status of that point in the `SharedData` object to "highlighted." This change triggers an update in all of the dependent objects (the other plots that use the dataset), which in turn (4) re-draw all of the appearances of the highlighted point to match the map. Linked highlighting creates perceptual groups of points across plots, because all highlighted points share a common fate (as long as highlighting happens immediately). In addition, the immediacy of place also ties the group to the location of the selected point.
+
+## Interactivity {#interactivity}
+
+To create a \pkg{DrivePlotR} plot map, we bring together interactive elements from \CRANpkg{leaflet} [@chengLeafletCreateInteractive2024] and \CRANpkg{plotly} [@carson] using functionality from \pkg{crosstalk} [@chengCrosstalkInterWidgetInteractivity2023]. The maps created by \pkg{DrivePlotR} retain the interactive features of leaflet maps, including zooming and a selection box for highlighting points. We provide more detail in [Section 3.1](#map). Similarly, the companion graphs have the attributes from a \CRANpkg{plotly} subplot, like shared axes and linked highlighting, zooming, and panning across graphs. We discuss this in more detail in [Section 3.2](#companions). 
+
+<!-- An essential component of \pkg{DrivePlotR} is the unification and arrangement provided by the `bscols()` function from \CRANpkg{crosstalk} [@chengCrosstalkInterWidgetInteractivity2023]. This function places the map and the companion graph(s) side-by-side within the same visualization, with the map and the stack of companion graph(s) each occupying half of the available width. \pkg{DrivePlotR} users can specify a title for the plot map, which is displayed above the center of the map and the companion graph(s), as shown in Figure \@ref(fig:teaser). -->
+
+We place the map and companion graph(s) side-by-side within the same visualization using the CSS Flexbox Layout implemented using functions from \CRANpkg{htmltools} [@chengHtmltoolsToolsHTML2025]. \pkg{DrivePlotR} users can specify a title for the plot map, which is displayed above the center of the map and the companion graph(s), as shown in Figure \@ref(fig:teaser). The `bscols()` function from \CRANpkg{crosstalk} [@chengCrosstalkInterWidgetInteractivity2023] also allows the map and companion graph(s) to be placed next to each other in the same row, but makes including the title more challenging. The Flexbox Layout also makes it easier to adjust the width and height of the plot map. 
+
+As mentioned in [Section 1](#introduction), we created \pkg{DrivePlotR} with the goal of producing linked interactive vehicle trajectory plots that we could easily share with collaborators while still maintaining data privacy. We achieved this goal by utilizing the interactivity provided by \CRANpkg{crosstalk} [@chengCrosstalkInterWidgetInteractivity2023]. Because of \CRANpkg{crosstalk} functionality, we can save \pkg{DrivePlotR} plot maps within self-contained HTML files while still retaining all of the interactive functionality of the visuals. We can then share these HTML files with collaborators, who are still able to use the interactive features of the plot map from within the HTML file without the need for external hosting. Our \pkg{DrivePlotR} visualizations are easy to reproduce and update. We also stay within the domain of free, open-source software.
+
+## Non-Standard Evaluation {#nse}
+
+We made the interface for the \pkg{DrivePlotR} functions look similar to the interface of the `qplot()` function from \CRANpkg{ggplot2} [@wickhamGgplot2ElegantGraphics2016]. Although `qplot()` is now deprecated, the one-line function interface with explicit arguments works well for our purposes. We expect that many users of \pkg{DrivePlotR} will be transportation professionals with little R programming experience, so a single function call with explicit arguments would work best. 
+\pkg{DrivePlotR} functions involve required mappings, mappings, and parameter settings. The required mappings include the `SharedData` object to be used in the visualization, as well as essential function arguments like the variables from the data to be plotted on the horizontal and vertical axes of the companion graphs. Other mappings from the data include the color variable for the visualization and the label for the points on the map. Parameter settings include variable labels and the legend and plot titles. These arguments can be seen in the code examples in [Section 5](#workflow).
+
+We decided to have users pass required mappings to the \pkg{DrivePlotR} functions as bare expressions (i.e., without quotes). For example, the variable for the horizontal axis of the companion graph in the `driveplot_companion()` function must be given as `x = time_cst`, not `x = "time_cst"`. If a user provides a required mapping within quotes, the function will throw an error. We made this choice to simplify the function interface for the user and reduce typing. An additional benefit is that users can modify arguments within the \pkg{DrivePlotR} functions. For example, the user can convert from the US/Central time zone to UTC "on-the-fly" by specifying `x = as.POSIXct(time_cst, tz = "UTC")` within a call to the function `driveplot_companion()`. However, this non-standard evaluation increases the complexity of the function code on the backend. We handle non-standard evaluation in \pkg{DrivePlotR} using tidy evaluation from \CRANpkg{rlang} [@rlang].
+
+Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions()` and the `driveplot()` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). We did this because we wanted to reduce confusion for the user when providing other function arguments (of which there are many). Users may transform the ys within the function arguments as well. For example, including `ys = c(speed_mph * 1.60934, gyro_heading %% 360)` allows the user to convert the speed from miles per hour to kilometers per hour and ensure that the gyroscopic heading falls between 0 and 360, all within the call to `driveplot_companions()` or `driveplot()`. We provide examples of such within-function transformations in [Section 5](#workflow).
+
+# Plot Map Components {#plotmap}
+
+In this section, we describe the components of \pkg{DrivePlotR} plot maps that are visible to the user. We discuss the map component in [Section 3.1](#map) and the companion graph component in [Section 3.2](#companions).
+
+## Map {#map}
+
+The first component of a \pkg{DrivePlotR} plot map is a map showing the GPS location of each point in the dataset. The function `driveplot_map()` creates these maps. We use functions from \CRANpkg{leaflet}, the R interface to the Leaflet JavaScript library, to create this interactive map [@chengLeafletCreateInteractive2024]. Leaflet maps are user-friendly, allowing the user to zoom in and out and highlight points of particular interest using a selection box. Because of functionality from \CRANpkg{crosstalk}, any points selected on the map will also be selected on the companion graph(s).
+
+We allow flexibility in how users provide location data to \pkg{DrivePlotR} functions. Users can explicitly provide bare, unquoted names of the columns containing the longitude and latitude coordinates to the `lng` and `lat` arguments of \pkg{DrivePlotR} functions. Users may instead choose to provide location data implicitly. We give users the option to pass a `SharedData` object with an \CRANpkg{sf} geometry column of type POINT to the \pkg{DrivePlotR} function. Another option is to pass a `SharedData` object without \CRANpkg{sf} geometry column of type POINT while also not providing the `lng` and `lat` arguments to the \pkg{DrivePlotR} function. In this case, \pkg{DrivePlotR} will attempt to infer the columns that contain the longitude and latitude coordinates. We use a similar process to the latitude and longitude guessing performed by \CRANpkg{leaflet}, but our process is less restrictive because we search both the start and end of column names for expressions like "lat" and "latitude" to infer the latitude column. We try to infer the longitude column in a similar way. If latitude and longitude columns are successfully inferred, a message prints to the console to notify the user which columns were identified as the latitude and longitude columns. If no appropriate columns can be identified or if there are multiple candidates for the latitude and longitude columns, the process results in an error. To ensure the map uses the correct location data as intended, we prefer that users directly provide the names of the longitude and latitude columns or use a `SharedData` object with \CRANpkg{sf} geometry column with type POINT.
+
+Users can choose to have a label appear when they hover the cursor over points on the map. This optional label conveys additional information of the analyst's choice about the point, e.g., time, GPS coordinates, etc. In addition, \pkg{DrivePlotR} allows users to change the color of the points on the map to a particular color of their choice or to associate the color of the map points with a variable from the data. This color choice will also be applied to the companion graphs. For the color palettes, the user can choose from one of four viridis color palettes [@smithMatplotlibColormaps2015] as implemented in the \CRANpkg{viridisLite} R package [@garnierViridisLiteColorblindfriendlyColor2024]: viridis, magma, inferno, and plasma. We chose these color palettes for their compatibility with both Leaflet and the \CRANpkg{ggplot2} package [@wickhamGgplot2ElegantGraphics2016], which is used in the creation of the companion graphs. The viridis color palettes provide other benefits as well.
+
+The viridis color palettes are designed to provide uniform color contrasts, i.e, less distortion from difference in the data to difference in the perceived color differences [@smithMatplotlibColormaps2015]. Here, color is typically used to map the direction (and some of the speed) of a drive. The viridis color palettes ensure that points are visible on a busy background, such as the Open Street Map tiles. To make even light colors in the scheme stand out on a white background, we use a (very thin) ring of gray around each dot to increase the contrast between point and background. This contrast can be seen in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:leftturn)', '\\@ref(fig:leftturn-screenshot)'))`.
+
+## Companion Graphs {#companions}
+
+Each \pkg{DrivePlotR} plot map has one or more companion graphs next to the map. The function `driveplot_companions()` creates the companion graphs by calling the function `driveplot_companion()` (which creates a single companion graph) the necessary number of times determined by the number of variables the user provides. We do not restrict users in the number of variables they provide to be plotted in companion graphs. However, creating more than four companion graphs may cause the visualization to become distorted or overwhelming, and we raise a warning in this case. All companion graphs share the same variable on the horizontal axis. In our original use cases for \pkg{DrivePlotR}, we plotted time on the horizontal axis to emphasize the spatio-temporal nature of the data. However, we are free to choose a different variable (e.g., distance) that works better for different applications. Users specify the variables for each of the companion graphs. The same color choices applied to the map also apply to the companion graphs. Users can also specify the labels for the shared horizontal axis, the vertical axis for each plot, and the legend, if present. To ease the interaction with the map and to emphasize the discrete nature of the data, we use points instead of curves on the companion graphs.
+
+We use functions from \CRANpkg{ggplot2} [@wickhamGgplot2ElegantGraphics2016] to create the initial version of each companion graph. We then use the `ggplotly()` function from \CRANpkg{plotly} [@carson] to convert the initial static graphs produced by \CRANpkg{ggplot2} into an interactive plotly object. We then collect the resulting interactive graphs into one display using the \CRANpkg{plotly} function `subplot()`, which allows the companion graphs to be stacked on top of each other. This establishes that the graphs share the same horizontal axis and legend and ensures that zooming on one of the graphs will affect the others, an essential aspect of the interactive nature of the plot.
+
+### Visualizing Angle Variables {#angles}
+
+A widely used convention for values representing angles is to report them in a bounded interval of width 360 degrees (or $2\pi$ radians). The interval of $[0, 360)$ (or $[0, 2\pi)$) corresponds to the first congruence class, and ensures that any mathematical calculations are well-defined. However, this restriction introduces discontinuities in the data that visually are very distracting, because they break two very basic (implicit) Gestalt principles of (1) continuity and (2) grouping. The violation of the first Gestalt principle is obvious. The grouping principle means that items shown in close proximity are expected to be close in the data, and correspondingly, items shown far apart are expected to be far apart in the data. If the car is driven at an angle close to $0^\circ$, the reported angles might fall in the two spatially separated intervals of $[0,5]$ degrees and $[355, 360)$ degrees. Visually, the separation between these intervals falsely suggests two clusters of data.
+
+```{r angles, fig.cap = "Raw direction (top) and continuity-corrected direction (bottom).", fig.alt="Two stacked time-series plots of vehicle heading angle over time. The top plot features the raw heading and includes abrupt jumps in heading when the vehicle drives north and the heading changes from small positive values near 0 degrees to values near 360 degrees. The bottom plot shows the corrected heading, for which the abrupt jumps have been smoothed."}
+nds_data7 <- nds_data |> filter(drive == 7)
+nds_data7 <- nds_data7 |>
+  mutate(
+    time_cst = ymd_hms(time_cst, tz = "US/Central"),
+    gps_minute = as.factor(minute(time_cst))
+  )
+
+nds_data7 |>
+  pivot_longer(starts_with("gyro_heading")) |>
+  filter(name != "gyro_heading_diff") |>
+  mutate(
+    name = factor(name),
+    name = factor(name, rev(levels(name))),
+    name = factor(name, labels = c("Raw", "Continuity-Corrected"))
+  ) |>
+  ggplot(aes(x = time_cst, y = value)) +
+  geom_point() +
+  geom_hline(yintercept = c(0, 360), linewidth = 0.25) +
+  facet_grid(name ~ ., scales = "free_y") +
+  theme_bw() +
+  scale_y_continuous("Angle (in degrees)") +
+  xlab("Time")
+```
+
+As a remedy, consider that in the context of telematics data, trajectories are observed, i.e., temporal sequences of angles are available. Movement and the associated changes in directions are, by definition, continuous in time and space. In the example in Figure \@ref(fig:angles), the angles were only observed at a frequency of 1 Hz, but it is reasonable to assume that changes in one second fell within a range of $\pm 180^\circ$ (or $\pm \pi$) under regular driving conditions. This assumption allows us to apply a continuity-correction for angle variables by picking that congruence class for successive angles that keeps the (angle) distance to their predecessor below $\pm 180^\circ$. Figure \@ref(fig:angles) gives an example: both plots show the same directions over time, in the continuity-corrected version, the two segments with points "floating" at the top of the chart are moved below the horizontal line at $0^\circ$. In general, the continuity correction shifts angles by at most one congruence class up or down. Unless otherwise mentioned, all angle variables in this article are displayed using this continuity correction.
+
+```{r four-plots, fig.cap="Four companion graphs.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Four stacked time-series plots showing vehicle speed (MPH), GPS heading (degrees), gyroscropic heading (degrees) and GPS PDOP (a measure of GPS data quality). The second plot of GPS heading displays discontinuities, while the third plot of gyroscopic heading is much more consistent."}
+# nds_sf7 <- nds_data7 |>
+#   st_as_sf(coords = c("gps_long", "gps_lat"),
+#            crs = "WGS84")
+# nds_sf7_sd <- SharedData$new(nds_sf7)
+# 
+# four <- driveplot_companions(shareddata = nds_sf7_sd,
+#                              x = time_cst,
+#                              ys = c(speed_mph, gps_heading, gyro_heading, gps_pdop),
+#                              colorvar = gps_minute,
+#                              xlabel = "Time",
+#                              ylabels = c("Speed (MPH)", "GPS Heading", "Gyro Heading", "GPS PDOP"),
+#                              colorpalette = "viridis",
+#                              showlegend = TRUE,
+#                              legendtitle = "Minute",
+#                              spacing = 0.05,
+#                              plotheight = '100vh'
+#                              )
+
+# Saved manually as RJournal/figures/four_graphs.html using RStudio Viewer Export
+# webshot2::webshot(here::here("RJournal/figures/four_graphs.html"),
+#                   file = here::here("RJournal/figures/four_graphs.png"),
+#                   delay = 1,
+#                   zoom = 2)
+
+knitr::include_url("figures/four_graphs.html")
+```
+
+```{r, four-plots-screenshot, fig.cap="Four companion graphs. Visit the online version to see the interactive version.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+knitr::include_graphics("figures/four_graphs.png")
+```
+
+Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:four-plots)', '\\@ref(fig:four-plots-screenshot)'))` gives a more detailed insight into the drive using a stack of four companion plots. The two middle plots show two different ways of measuring the heading, or the direction the vehicle is traveling. The second of the four plots shows the heading as measured by the GPS sensor mounted in the car while the third of the four plots shows the heading as measured by the gyroscope mounted in the car. The two sensors clearly measure heading differently, with the GPS heading being much less consistent than the gyro heading. \pkg{DrivePlotR} users can select the points where the GPS heading is particularly inconsistent and see if there are certain types of locations or driving scenarios where this behavior tends to occur.
+
+# Use Cases {#usecases}
+
+In this section, we present three use cases for which we have used \pkg{DrivePlotR} plot maps. We assess the quality of the GPS data for a vehicle trajectory in [Section 4.1](#gps). We describe how we use \pkg{DrivePlotR} plot maps to identify trajectory components associated with turns in [Section 4.2](#turnid). In [Section 4.3](#accel), we investigate detected acceleration events to determine if they are indicative of problematic driving behavior.
+
+## Assessing Data Quality {#gps}
+
+Figure \@ref(fig:headings) shows an overlay of the direction in which a car is moving during one drive, measured by (a) GPS (gray points) and (b) inferred from gyroscopic motion (colored points). The expectation would be that these two direction measures should be highly correlated. However, in this case, there are surprisingly large differences between the measurements. In particular, when the car is standing or moving very slowly, the GPS measurements show drastic (and most likely confabulated) changes in direction. The gray bands in Figure \@ref(fig:headings) indicate periods of speeds of less than 2 miles an hour. When the car is moving at more than that speed, the gyroscopic heading and GPS measurements move in tandem. Thus, for this example, the gyroscopic heading is generally more consistent and thus preferred over the GPS heading.
+
+```{r headings, fig.cap="Comparison of two measures for a car's direction for one drive: colored points show gyroscopic heading (measured in the car), the gray points show heading as measured by GPS. When the speeds are low (gray rectangles), GPS heading shows dramatic changes.", fig.alt="Time series plot of GPS heading (degrees) and gyroscopic heading (degrees). The GPS heading points are gray and the gyroscopic heading points are colored by the vehicle speed from 0 to just above 30 MPH. At low speeds below 2 MPH, the GPS heading shows drastic changes. At higher speeds, the GPS heading and the gyroscopic heading move together. This illustrates that GPS heading is particularly erratic at low speeds and gyroscopic heading is generally more consistent."}
+lowspeed_intervals <- nds_data7 |>
+  mutate(
+    low_speed = speed_mph < 1.75,
+    diff_low_speed = low_speed - lag(low_speed)
+  ) |>
+  filter(diff_low_speed != 0 | is.na(diff_low_speed)) |>
+  select(time_cst, low_speed, diff_low_speed) |>
+  mutate(
+    change = ifelse(low_speed, "toLow", "toHigh")
+  ) |>
+  ungroup() |>
+  select(change, time_cst) |>
+  mutate(id = 1:n()) |> # this line should not be necessary
+  pivot_wider(names_from = change, values_from = time_cst)
+
+lowspeed_intervals <- lowspeed_intervals |>
+  select(-id) |>
+  reframe(
+    toHigh = na.omit(toHigh)[-1],
+    toLow = na.omit(toLow)[-5]
+  )
+
+nds_data7 |>
+  ggplot() +
+  geom_hline(yintercept = c(0, 360, -360), colour = "grey60") +
+  geom_point(aes(x = time_cst, y = gps_heading), colour = "grey50", size = 1) +
+  geom_point(aes(x = time_cst, y = gyro_heading, colour = speed_mph)) +
+  ylab("Headings") +
+  theme_bw() +
+  geom_rect(aes(xmin = toLow, xmax = toHigh, ymin = -Inf, ymax = +Inf), data = lowspeed_intervals, fill = "grey10", alpha = 0.25) +
+  scale_y_continuous(breaks = 180 * (-2:5)) +
+  scale_color_continuous("Speed (MPH)") +
+  xlab("Time")
+```
+
+## Turn Identification {#turnid}
+
+\pkg{DrivePlotR} is a helpful tool for identifying different aspects of a drive. For example, an effective turn identification method is a necessary step in order to analyze the number of left and right turns or the time taken to complete individual turns. It is easy to distinguish turns visually, but it is not always straightforward to do so programmatically. Drifting GPS coordinates that do not exactly follow the road system make it difficult to identify turns using GPS data alone. If turns at a specific intersection are of interest, it may seem reasonable to examine drivers' behavior within the vicinity of the intersection. However, shifts in GPS data can cause the coordinates corresponding to the turns to deviate from the intersection proper, making geospatial turn identification unreliable. We need a better method of turn identification.
+
+\pkg{DrivePlotR} visualizations allow users to highlight turns on the map and then examine the speed and heading for the associated points on the companion graphs. Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:leftturn)', '\\@ref(fig:leftturn-screenshot)'))` shows the whole drive, while Figure \@ref(fig:leftturnzoom) focuses on the left turn. Although the GPS PDOP values are less than 5 (and therefore fall into the range of values considered good enough for most applications), Figure \@ref(fig:leftturnzoom) shows that the vehicle trajectory points within the intersection where the turn occurred deviate from the road system. Geospatial turn identification will be ineffective in scenarios like this. However, in addition to geospatial patterns, turns are also associated with a decrease in speed and a change in heading. We can use these variables to detect turns.
+
+```{r leftturn, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from east to north of particular interest. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, waiting, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
+# Data for left turn identification example
+# nds_data16 <- nds_data |> filter(drive == 16)
+# nds_data16 <- nds_data16 |>
+#   mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
+#          gps_minute = as.factor(minute(time_cst)))
+# 
+# nds_data16 <- nds_data16 |> mutate(
+#   gps_heading_raw = gps_heading,
+#   gps_heading_diff = angle_dist(gps_heading, lag(gps_heading,1)),
+#   gps_heading_diff = ifelse(is.na(gps_heading_diff), gps_heading, gps_heading_diff),
+#   gps_heading_diff_dampen = ifelse(between(gps_heading_diff,-20,20), gps_heading_diff, sign(gps_heading_diff)*20),
+#   gps_heading = cumsum(gps_heading_diff),
+#   gps_heading_corrected = cumsum(gps_heading_diff_dampen),
+#   gyro_heading_raw = gyro_heading,
+#   gyro_heading_diff = angle_dist(gyro_heading, lag(gyro_heading,1)),
+#   gyro_heading_diff = ifelse(is.na(gyro_heading_diff), 0, gyro_heading_diff),
+#   gyro_heading = cumsum(gyro_heading_diff),
+#   speed_diff = speed_mph - lag(speed_mph, 1),
+#   turn_aspect = factor(case_when(
+#     between(time_cst, ymd_hms("2019-05-27 16:58:01", tz = "US/Central"), ymd_hms("2019-05-27 16:58:10", tz = "US/Central")) ~ "Approach",
+#     between(time_cst, ymd_hms("2019-05-27 16:58:11", tz = "US/Central"), ymd_hms("2019-05-27 17:00:03", tz = "US/Central")) ~ "Waiting",
+#                           between(time_cst, ymd_hms("2019-05-27 17:00:04", tz = "US/Central"), ymd_hms("2019-05-27 17:00:15", tz = "US/Central")) ~ "Turning", .default = "Unrelated"),
+#                        levels = c("Approach", "Waiting", "Turning", "Unrelated"))
+# )
+# 
+# nds_sf16 <- nds_data16 |> sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+#                                 crs = "WGS84")
+# 
+# nds_data16_sd <- crosstalk::SharedData$new(nds_data16)
+# nds_sf16_sd <- crosstalk::SharedData$new(nds_sf16)
+# left_turn_id <- driveplot(shareddata = nds_sf16_sd,
+#                           x = time_cst,
+#                           ys = c(speed_mph, gyro_heading, gyro_heading_diff, gps_pdop),
+#                           colorvar = turn_aspect,
+#                           maplabel = time_cst,
+#                           colorpalette = "viridis",
+#                           xlabel = "Time (CST)",
+#                           ylabels = c("Speed (MPH)", "Gyro Heading",
+#                                       "1 s Lagged Difference in Gyro Heading", "GPS PDOP"),
+#                           legendtitle = "Left Turn Behavior")
+# Saved manually as RJournal/figures/left_turn_id.html
+knitr::include_url("figures/left_turn_id.html")
+```
+
+```{r leftturnalt1, eval = FALSE, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from west to south of particular interest. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
+# Data for an alternate left turn identification example
+nds_data23 <- nds_data |> 
+  filter(drive == 23)
+nds_data23 <- nds_data23 |>
+  mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
+         gps_minute = as.factor(minute(time_cst)))
+
+nds_data23 <- nds_data23 |> mutate(
+  gyro_heading = gps_heading_raw[1] - cumsum(gyro_z),
+  gyro_heading_lag = lag(gyro_heading, n = 1),
+  gyro_heading_lead = lead(gyro_heading, n = 1),
+  fprime = (gyro_heading_lead - gyro_heading_lag)/2,
+  sign_fprime = sign(fprime),
+  sign_fprime_change_counter = consecutive_id(sign_fprime),
+  turn_aspect = factor(case_when(
+    between(time_cst, ymd_hms("2019-05-28 16:17:14", tz = "US/Central"), ymd_hms("2019-05-28 16:17:19", tz = "US/Central")) ~ "Approach",
+    between(time_cst, ymd_hms("2019-05-28 16:17:20", tz = "US/Central"), ymd_hms("2019-05-28 16:17:26", tz = "US/Central")) ~ "Turning",
+   .default = "Unrelated"),
+   levels = c("Approach", "Turning", "Unrelated"))
+)
+
+nds_data23_candidates <- nds_data23 |> 
+    group_by(sign_fprime_change_counter, sign_fprime) |> 
+    summarize(n = n(),
+              min_time_cst = min(time_cst),
+              max_time_cst = max(time_cst),
+              gyro_heading_change = last(gyro_heading) - first(gyro_heading),
+              start_speed = first(speed_mph),
+              end_speed = last(speed_mph),
+              avg_speed = mean(speed_mph),
+              start_lat = first(gps_lat),
+              start_lng = first(gps_long),
+              .groups = "keep"
+         )
+
+nds_sf23 <- nds_data23 |> 
+  sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+               crs = "WGS84")
+
+nds_sf23_sd <- crosstalk::SharedData$new(nds_sf23)
+left_turn_id_alt1 <- driveplot(shareddata = nds_sf23_sd,
+                               x = time_cst,
+                               ys = c(speed_mph, gyro_heading, gps_pdop),
+                               colorvar = turn_aspect,
+                               maplabel = time_cst,
+                               colorpalette = "viridis",
+                               xlabel = "Time (CST)",
+                               ylabels = c("Speed (MPH)", "Gyro Heading","GPS PDOP"),
+                               legendtitle = "Left Turn Behavior")
+
+```
+
+```{r leftturnalt2, eval = FALSE, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from east to north of particular interest. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
+# Data for an alternate left turn identification example
+nds_data24 <- nds_data |> 
+  filter(drive == 24)
+nds_data24 <- nds_data24 |>
+  mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
+         gps_minute = as.factor(minute(time_cst)))
+
+nds_data24 <- nds_data24 |> mutate(
+  gyro_heading = gps_heading_raw[1] - cumsum(gyro_z),
+  gyro_heading_lag = lag(gyro_heading, n = 1),
+  gyro_heading_lead = lead(gyro_heading, n = 1),
+  fprime = (gyro_heading_lead - gyro_heading_lag)/2,
+  sign_fprime = sign(fprime),
+  sign_fprime_change_counter = consecutive_id(sign_fprime),
+  turn_aspect = factor(case_when(
+    between(time_cst, ymd_hms("2019-05-29 09:05:52", tz = "US/Central"), ymd_hms("2019-05-29 09:05:56", tz = "US/Central")) ~ "Approach",
+    between(time_cst, ymd_hms("2019-05-29 09:05:57", tz = "US/Central"), ymd_hms("2019-05-29 09:06:02", tz = "US/Central")) ~ "Turning",
+   .default = "Unrelated"),
+   levels = c("Approach", "Turning", "Unrelated"))
+)
+
+nds_data24_candidates <- nds_data24 |> 
+    group_by(sign_fprime_change_counter, sign_fprime) |> 
+    summarize(n = n(),
+              min_time_cst = min(time_cst),
+              max_time_cst = max(time_cst),
+              gyro_heading_change = last(gyro_heading) - first(gyro_heading),
+              start_speed = first(speed_mph),
+              end_speed = last(speed_mph),
+              avg_speed = mean(speed_mph),
+              start_lat = first(gps_lat),
+              start_lng = first(gps_long),
+              .groups = "keep"
+         )
+
+nds_sf24 <- nds_data24 |> 
+  sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+               crs = "WGS84")
+
+nds_sf24_sd <- crosstalk::SharedData$new(nds_sf24)
+left_turn_id_alt2 <- driveplot(shareddata = nds_sf24_sd,
+                               x = time_cst,
+                               ys = c(speed_mph, gyro_heading, gps_pdop),
+                               colorvar = turn_aspect,
+                               maplabel = time_cst,
+                               colorpalette = "viridis",
+                               xlabel = "Time (CST)",
+                               ylabels = c("Speed (MPH)", "Gyro Heading","GPS PDOP"),
+                               legendtitle = "Left Turn Behavior")
+
+```
+
+```{r leftturn-screenshot, fig.cap = "Identifying a left turn based on low speed and changes in heading. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+# webshot2::webshot("figures/left_turn_id.html", "figures/left_turn_id.png", zoom = 2)
+knitr::include_graphics("figures/left_turn_id.png")
+```
+
+```{r leftturnzoom, fig.cap="Zooming in on the left turn.", fig.alt="Zoomed-in view of the left turn of interest. On the left is a map of the vehicle trajectory at the intersection. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The plots highlight speed near 0 while the vehicle is waiting to turn. During the turn, there is a dip in the 1-second lag in the gyroscopic heading before resuming its flat pattern."}
+knitr::include_graphics("figures/left_turn_id_zoom.png")
+```
+
+## Acceleration Event Investigation {#accel}
+
+Harsh acceleration and hard braking are undesirable driving behaviors that are known to be associated with unsafe driving conditions and otherwise avoidable vehicle wear-and-tear. In-vehicle accelerometers can monitor these events and flag when they occur. Detecting harsh acceleration and hard braking events may be of interest in the context of a naturalistic driving study. We show an example of part of an eastbound drive from an NDS that includes an acceleration event in Figure \@ref(fig:accel). For this NDS, an acceleration event was defined as having occurred if the absolute longitudinal (front-to-back) or lateral (side-to-side) acceleration of the vehicle exceeded 0.35g for at least 0.1 second, where the unit "g" is the acceleration due to gravity (1g = 9.81 $\text{m/s}^2$). Three severity categories were defined based on the level of absolute acceleration: low for absolute accelerations of 0.35g to 0.44g, medium for absolute accelerations of 0.45g to 0.59g, and high for absolute accelerations over 0.6g. In Figure \@ref(fig:accel), the companion graphs show the speed of the vehicle in miles per hour, as well as the longitudinal acceleration and the lateral acceleration of the vehicle. Figure \@ref(fig:accel) shows a medium acceleration event detected due to a sharp decrease in longitudinal acceleration, although the GPS coordinates and the decrease in speed of approximately 1 mile per hour in 1 second associated with the acceleration event indicate that this acceleration event is likely not of concern.
+
+```{r accel, fig.cap="A likely unproblematic acceleration event detected during part of a drive from a naturalistic driving study, where the unit g in the companion graph labels is the acceleration due to gravity.", fig.alt="Zoomed-in map and time series plots of vehicle speed (MPH) and longitudinal and lateral acceleration (both in g, i.e., acceleration due to gravity) showing a detected longitudinal acceleration event during a drive on a straight road. Although an acceleration event was detected, the GPS coordinates and the decrease in speed of approximately 1 MPH in 1 second associated with the event indicate that it is likely not of concern."}
+#
+# drive6 <- nds_data |> dplyr::filter(drive == 6)
+# drive6 <- drive6 |>
+#   sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+#                crs = "WGS84")
+# drive6 <- drive6 |>
+#   dplyr::mutate(time_cst = lubridate::ymd_hms(time_cst, tz = "US/Central"),
+#                 gps_minute = as.factor(lubridate::minute(time_cst)),
+#                  accel_event_cat_og = accel_event_cat,
+#                 accel_event_cat = replace_na(accel_event_cat, "none"),
+#                 accel_event_cat = factor(accel_event_cat, levels = c("none", "low", "med", "high")))
+#
+# drive6plot <- drive6 |>
+#   filter(between(time_cst, ymd_hms("2019-05-26 15:52:54", tz = "US/Central"), ymd_hms("2019-05-26 15:54:17", tz = "US/Central")))
+#
+# shared_drive6plot <- crosstalk::SharedData$new(drive6plot)
+# #
+# accel_events <- driveplot(
+#   shareddata = shared_drive6plot,
+#   x = time_cst,
+#   ys = c(speed_mph, accel_x, accel_y),
+#   colorvar = accel_event_cat,
+#   maplabel = glue::glue("{time_cst}; {accel_event_cat}"),
+#   colorpalette = "viridis",
+#   fillopacity = 0.75,
+#   xlabel = "Time",
+#   ylabels = c("Speed (MPH)", "Longitudinal Acceleration (g)", "Lateral Acceleration (g)"),
+#   showlegend = TRUE,
+#   legendtitle = "Type of Acceleration Event",
+#   spacing = 0.05)
+# Saved manually as acceleration_events_none.html
+# Took screenshot of plot zoomed in on the medium acceleration event
+knitr::include_graphics("figures/accel_event_zoom_none.png")
+```
+
+Figure \@ref(fig:rightturn) shows a low acceleration event detected during a different drive from the same NDS. This acceleration event was detected due to an increase in lateral acceleration above 0.35g. Although the recorded GPS points drifted away from the road system in this case, we can reasonably assume that the sharp angle of the intersection between the two streets forced the driver to make a sharp turn that showed up in the lateral acceleration data as a rapid increase above the threshold for acceleration event detection. Figure \@ref(fig:accel) and Figure \@ref(fig:rightturn) show that \pkg{DrivePlotR} visualizations can help identify whether detected acceleration events in vehicle trajectory data are problematic. Such insights can inform refinements of the thresholds used to detect and classify acceleration events.
+
+```{r rightturn, fig.cap="A lateral acceleration event detected before a sharp right turn.", fig.alt="Zoomed-in map and time series plots of vehicle speed (MPH) and lateral acceleration (g, i.e., acceleration due to gravity) during a detected lateral acceleration event during a right turn at an intersection. The streets of the intersection cross each other at a sharp angle, indicating that the detected acceleration event is likely due to the intersection geometry and unlikely to be problematic."}
+# drive_right <- nds_data |> dplyr::filter(drive == 7)
+# drive_right <- drive_right |>
+#   sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+#                crs = "WGS84")
+# drive_right <- drive_right |>
+#   dplyr::mutate(time_cst = lubridate::ymd_hms(time_cst, tz = "US/Central"),
+#                 gps_minute = as.factor(lubridate::minute(time_cst)),
+#                 accel_event_cat_og = accel_event_cat,
+#                 accel_event_cat = tidyr::replace_na(accel_event_cat, "none"),
+#                 accel_event_cat = factor(accel_event_cat, levels = c("none", "low")))
+#
+# shared_drive_right <-
+#   crosstalk::SharedData$new(drive_right)
+
+# right_turn <- driveplot(
+#   shareddata = shared_drive_right,
+#   maplabel = time_cst, colorvar = accel_event_cat,
+#   colorpalette = "viridis", fillopacity = 0.75,
+#   x = time_cst,
+#   ys = c(speed_mph, accel_y),
+#   xlabel = "Time",
+#   ylabels = c("Speed (MPH)", "Lateral Acceleration (g)"),
+#   showlegend = TRUE,
+#   legendtitle = "Type of Acceleration Event",
+#   spacing = 0.05)
+# Saved manually as figures/accel_event_right_turn_none.html
+# Zoomed in screenshot in RJournal/figures/accel_event_right_turn_none.png
+knitr::include_graphics("figures/accel_event_right_turn_none.png")
+```
+
+# DrivePlotR Workflow {#workflow}
+
+We now outline the basic workflow for making visualizations with \pkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
+
+-   `driveplot()` (the primary function; creates an interactive plot map by calling `driveplot_map()` and `driveplot_companions()`)
+
+-   `driveplot_map()` (creates an interactive map)
+
+-   `driveplot_companions()` (creates multiple stacked companion graphs by calling `driveplot_companion()`)
+
+-   `driveplot_companion()` (creates a single companion graph)
+
+We show the relationship between the main \pkg{DrivePlotR} functions in Figure \@ref(fig:functions). \pkg{DrivePlotR} also contains several internal helper functions that are not user-facing. We need these functions to ensure the four main functions of \pkg{DrivePlotR} work as expected.
+
+```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack.", fig.alt="Diagram showing the relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions. The function driveplot\\_companions in turn calls driveplot\\_companion."}
+knitr::include_graphics("figures/function_hierarchy.png")
+```
+
+Now, we describe the steps in a basic workflow for \pkg{DrivePlotR}.
+
+i.  Make the drive data available in the R session. We make non-sensitive drives from a naturalistic driving study available as part of the \pkg{DrivePlotR} package, but any other dataset with both geographic and temporal components is also suitable. Recall that \pkg{DrivePlotR} expects one row for each observation in the data.
+
+```{r loaddata, echo=TRUE}
+library(DrivePlotR)
+data("drive7")
+```
+
+ii. Establish the geographic variables and projection. Setting the coordinate reference system (CRS) to WGS84 is necessary to ensure that points are compatible with maps in Leaflet. We already set this CRS for the example dataset `drive7` included with \pkg{DrivePlotR}. The `drive7` dataset uses an \CRANpkg{sf} geometry column with type POINT. The latitude and longitude coordinates in the example dataset `nds_data` included with \pkg{DrivePlotR} also already use the WGS84 CRS. Users may find that using functions from \CRANpkg{sf} makes it easier to set the CRS for their data, but \CRANpkg{sf} is not required to use \pkg{DrivePlotR}.
+
+iii. Convert the data into a shared data frame using \CRANpkg{crosstalk}. (If the user does not pass a shared data frame into a \pkg{DrivePlotR} function, we make the conversion as part of the function call and warn the user.)
+
+```{r shareddata, echo=TRUE}
+shared_drive <- crosstalk::SharedData$new(drive7)
+```
+
+iv. Create plot maps with \pkg{DrivePlotR}.
+
+Although our main intention for \pkg{DrivePlotR} is to create linked visualizations with a map and companion graphs, we also provide functions so users can create separate maps or companion graphs. A basic standalone map, such as the one in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-map)', '\\@ref(fig:basic-map-screenshot)'))`, can be created as follows:
+
+```{r mapcode, echo=TRUE, eval=FALSE}
+driveplot_map(shareddata = shared_drive)
+```
+
+```{r basic-map, fig.cap="A basic standalone map.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic map showing a vehicle trajectory as a sequence of blue points."}
+# Saved manually as RJournal/figures/basic_map.html
+knitr::include_url("figures/basic_map.html")
+```
+
+```{r basic-map-screenshot, fig.cap="A basic standalone map. Visit the online version to see the interactive map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+# webshot2::webshot(here::here("RJournal/figures/basic_map.html"),
+#                   here::here("RJournal/figures/basic_map.png"),
+#                   delay = 10,
+#                   zoom = 2)
+knitr::include_graphics("figures/basic_map.png")
+```
+
+We provide functionality to create standalone companion graphs in addition to maps. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
+
+```{r basic-graph-code, echo=TRUE, eval=FALSE}
+driveplot_companion(
+  shareddata = shared_drive,
+  x = time_cst,
+  y = speed_mph,
+  xlabel = "Time",
+  ylabel = "Speed (MPH)"
+)
+```
+
+```{r basic-graph, fig.cap="A basic companion graph for speed.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (MPH) over time. The points are all blue."}
+# saved manually as figures/basic_graph.html
+knitr::include_url("figures/basic_graph.html")
+```
+
+```{r basic-graph-screenshot, fig.cap="A basic companion graph for speed. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+# webshot2::webshot(here::here("RJournal/figures/basic_graph.html"),
+#                   here::here("RJournal/figures/basic_graph.png"),
+#                   delay = 10,
+#                   zoom = 2)
+knitr::include_graphics("figures/basic_graph.png")
+```
+
+We developed \pkg{DrivePlotR} so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
+
+```{r transform-graph-code, echo = TRUE, eval = FALSE}
+driveplot_companion(
+  shareddata = shared_drive,
+  x = as.POSIXct(time_cst, tz = "UTC"),
+  y = speed_mph * 1.609,
+  xlabel = "Time (UTC)",
+  ylabel = "Speed (KPH)"
+)
+```
+
+```{r transform-graph, fig.cap="A companion graph where time and speed have been transformed within the function arguments.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (KPH) over time. The transformation from MPH to KPH was performed in the function arguments. The points are all blue."}
+# Saved manually as RJournal/figures/transform_graph.html
+knitr::include_url("figures/transform_graph.html")
+```
+
+```{r transform-graph-screenshot, fig.cap="A basic companion graph where time and speed have been transformed within the function arguments. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+# webshot2::webshot(here::here("RJournal/figures/transform_graph.html"),
+#                   here::here("RJournal/figures/transform_graph.png"),
+#                   delay = 10,
+#                   zoom = 2)
+knitr::include_graphics("figures/transform_graph.png")
+```
+
+We offer \pkg{DrivePlotR} users many options to customize their plot maps. For example, the following code was used to create the plot map in Figure \@ref(fig:teaser).
+
+```{r teaser-code, echo=TRUE, eval=FALSE}
+driveplot(
+  shareddata = shared_drive,
+  x = time_cst,
+  ys = c(speed_mph, gyro_heading, gps_pdop),
+  colorvar = gps_minute, maplabel = time_cst,
+  colorpalette = "viridis",
+  xlabel = "Time",
+  ylabels = c("Speed (MPH)", "Gyro Heading", "GPS PDOP"),
+  showlegend = TRUE,
+  legendtitle = "Minute",
+  plottitle = "A Drive in Omaha, NE"
+)
+```
+<!-- Saved manually as RJournal/figures/teaser.html using RStudio Viewer Export -->
+
+As we mentioned previously, users can transform arguments to \pkg{DrivePlotR} functions when they are specified within the function call. In the example in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-plotmap)', '\\@ref(fig:transform-plotmap-screenshot)'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W).
+
+```{r transform-plotmap-code, echo=TRUE, eval=FALSE}
+driveplot(
+  shareddata = shared_drive,
+  x = time_cst,
+  ys = c(
+    speed_mph * 1.60934,
+    c("N", "E", "S", "W")[findInterval(
+      (gyro_heading + 45) %% 360,
+      c(90, 180, 270)
+    ) + 1],
+    gps_pdop
+  ),
+  colorvar = gps_minute,
+  maplabel = time_cst,
+  colorpalette = "viridis",
+  xlabel = "Time",
+  ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
+  showlegend = TRUE,
+  legendtitle = "Minute",
+  plottitle = "A Drive in Omaha, NE"
+)
+```
+
+```{r transform-plotmap, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="A DrivePlotR plot map showing the same drive as in Figure 1. For this plot map, transformations were performed in the function arguments to convert speed from MPH to KPH and convert heading from degree values to general heading directions (N, S, E, W)."}
+# driveplot(
+#   shareddata = shared_drive,
+#   x = time_cst,
+#   ys = c(
+#     speed_mph * 1.60934,
+#     c("N", "E", "S", "W")[findInterval(
+#       (gyro_heading + 45) %% 360,
+#       c(90, 180, 270)
+#     ) + 1],
+#     gps_pdop
+#   ),
+#   colorvar = gps_minute,
+#   maplabel = time_cst,
+#   colorpalette = "viridis",
+#   xlabel = "Time",
+#   ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
+#   showlegend = TRUE,
+#   legendtitle = "Minute",
+#   plottitle = "A Drive in Omaha, NE"
+# )
+# Saved manually as RJournal/figures/transform_plotmap.html using RStudio Viewer Export
+# webshot2::webshot(here::here("RJournal/figures/transform_plotmap.html"),
+#                   file = here::here("RJournal/figures/transform_plotmap.png"),
+#                   delay = 1,
+#                   zoom = 2)
+
+knitr::include_url("figures/transform_plotmap.html")
+```
+
+```{r transform-plotmap-screenshot, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+knitr::include_graphics("figures/transform_plotmap.png")
+```
+
+v.  Save and share interactive plot maps.
+
+\pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. When using RMarkdown or Quarto, we recommend explicitly setting the width and height of the plot map in the `width` and `height` arguments to the `driveplot` function to prevent the visualization from stretching and occupying more space than desired. Acceptable units include %, vh, vw, and px. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane. \pkg{DrivePlotR} plot maps are incompatible with the `saveWidget` function from \CRANpkg{htmlwidgets} [@htmlwidgets].
+
+# Extensions/Limitations {#extensions}
+
+One current limitation of \pkg{DrivePlotR} is that color and position are the only possible ways to distinguish data points from each other. This means that it becomes difficult to differentiate more than a handful of distinct drives on the same plot map. In future extensions of \pkg{DrivePlotR}, we want to include the option to change the shape of the points based on user preference or a variable in the dataset. This will enable \pkg{DrivePlotR} to better handle use cases where users need to differentiate multiple drives by the same driver or drives made by different drivers.
+
+The ideas behind \pkg{DrivePlotR} visualizations are also applicable to other data sources. Similar visualizations as for NDS and CV data can be created for micromobility data from bicycles or scooters. We have also encountered interest in using \pkg{DrivePlotR} to create interactive visualizations for public transit systems, such as bus routes. For a precision agriculture application, \pkg{DrivePlotR} can create an interactive visualization of the GPS location and seeding rate for a tractor as it is driven through a field to plant this year's corn crop. \pkg{DrivePlotR} can also help analyze the paths and product application rates (e.g., salt) of snowplows as they clear roads during a blizzard. These are only a few of the possibilities for \pkg{DrivePlotR} visualizations to make multivariate high-resolution spatio-temporal data easier to understand and share.
+
