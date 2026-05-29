@@ -281,51 +281,58 @@ nds_data7 |>
 
 DrivePlotR is a helpful tool for identifying different aspects of a drive. For example, an effective turn identification method is a necessary step in order to analyze the number of left and right turns or the time taken to complete individual turns. It is easy to distinguish turns visually, but it is not always straightforward to do so programmatically. Drifting GPS coordinates that do not exactly follow the road system make it difficult to identify turns using GPS data alone. If turns at a specific intersection are of interest, it may seem reasonable to examine drivers' behavior within the vicinity of the intersection. However, shifts in GPS data can cause the coordinates corresponding to the turns to deviate from the intersection proper, making geospatial turn identification unreliable. We need a better method of turn identification.
 
-DrivePlotR visualizations allow users to highlight turns on the map and then examine the speed and heading for the associated points on the companion graphs. Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:leftturn)', '\\@ref(fig:leftturn-screenshot)'))` shows the whole drive, while Figure \@ref(fig:leftturnzoom) focuses on the left turn. Although the GPS PDOP values are less than 5 (and therefore fall into the range of values considered good enough for most applications), Figure \@ref(fig:leftturnzoom) shows that the vehicle trajectory points within the intersection where the turn occurred deviate from the road system. Geospatial turn identification will be ineffective in scenarios like this. However, in addition to geospatial patterns, turns are also associated with a decrease in speed and a change in heading. We can use these variables to detect turns.
+DrivePlotR visualizations allow users to highlight turns on the map and then examine the speed and heading for the associated points on the companion graphs. `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-leftturn', '@fig-leftturn-screenshot'))` shows the whole drive, while @fig-leftturnzoom focuses on the left turn. Although the GPS PDOP values are less than 5 (and therefore fall into the range of values considered good enough for most applications), @fig-leftturnzoom shows that the vehicle trajectory points within the intersection where the turn occurred deviate from the road system. Geospatial turn identification will be ineffective in scenarios like this. However, in addition to geospatial patterns, turns are also associated with a decrease in speed and a change in heading. We can use these variables to detect turns.
 
-```{r leftturn, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from east to north of particular interest. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, waiting, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
+```{r}
+#| label: fig-leftturn
+#| fig-cap: "Identifying a left turn based on low speed and changes in heading."
+#| eval: !expr knitr::is_html_output()
+#| fig-alt: "DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from east to north of particular interest. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, waiting, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."
+
 # Data for left turn identification example
-# nds_data16 <- nds_data |> filter(drive == 16)
-# nds_data16 <- nds_data16 |>
-#   mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
-#          gps_minute = as.factor(minute(time_cst)))
-# 
-# nds_data16 <- nds_data16 |> mutate(
-#   gps_heading_raw = gps_heading,
-#   gps_heading_diff = angle_dist(gps_heading, lag(gps_heading,1)),
-#   gps_heading_diff = ifelse(is.na(gps_heading_diff), gps_heading, gps_heading_diff),
-#   gps_heading_diff_dampen = ifelse(between(gps_heading_diff,-20,20), gps_heading_diff, sign(gps_heading_diff)*20),
-#   gps_heading = cumsum(gps_heading_diff),
-#   gps_heading_corrected = cumsum(gps_heading_diff_dampen),
-#   gyro_heading_raw = gyro_heading,
-#   gyro_heading_diff = angle_dist(gyro_heading, lag(gyro_heading,1)),
-#   gyro_heading_diff = ifelse(is.na(gyro_heading_diff), 0, gyro_heading_diff),
-#   gyro_heading = cumsum(gyro_heading_diff),
-#   speed_diff = speed_mph - lag(speed_mph, 1),
-#   turn_aspect = factor(case_when(
-#     between(time_cst, ymd_hms("2019-05-27 16:58:01", tz = "US/Central"), ymd_hms("2019-05-27 16:58:10", tz = "US/Central")) ~ "Approach",
-#     between(time_cst, ymd_hms("2019-05-27 16:58:11", tz = "US/Central"), ymd_hms("2019-05-27 17:00:03", tz = "US/Central")) ~ "Waiting",
-#                           between(time_cst, ymd_hms("2019-05-27 17:00:04", tz = "US/Central"), ymd_hms("2019-05-27 17:00:15", tz = "US/Central")) ~ "Turning", .default = "Unrelated"),
-#                        levels = c("Approach", "Waiting", "Turning", "Unrelated"))
-# )
-# 
-# nds_sf16 <- nds_data16 |> sf::st_as_sf(coords = c("gps_long", "gps_lat"),
-#                                 crs = "WGS84")
-# 
-# nds_data16_sd <- crosstalk::SharedData$new(nds_data16)
-# nds_sf16_sd <- crosstalk::SharedData$new(nds_sf16)
-# left_turn_id <- driveplot(shareddata = nds_sf16_sd,
-#                           x = time_cst,
-#                           ys = c(speed_mph, gyro_heading, gyro_heading_diff, gps_pdop),
-#                           colorvar = turn_aspect,
-#                           maplabel = time_cst,
-#                           colorpalette = "viridis",
-#                           xlabel = "Time (CST)",
-#                           ylabels = c("Speed (MPH)", "Gyro Heading",
-#                                       "1 s Lagged Difference in Gyro Heading", "GPS PDOP"),
-#                           legendtitle = "Left Turn Behavior")
+nds_data16 <- nds_data |> filter(drive == 16)
+nds_data16 <- nds_data16 |>
+  mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
+         gps_minute = as.factor(minute(time_cst)))
+
+nds_data16 <- nds_data16 |> mutate(
+  gps_heading_raw = gps_heading,
+  gps_heading_diff = angle_dist(gps_heading, lag(gps_heading,1)),
+  gps_heading_diff = ifelse(is.na(gps_heading_diff), gps_heading, gps_heading_diff),
+  gps_heading_diff_dampen = ifelse(between(gps_heading_diff,-20,20), gps_heading_diff, sign(gps_heading_diff)*20),
+  gps_heading = cumsum(gps_heading_diff),
+  gps_heading_corrected = cumsum(gps_heading_diff_dampen),
+  gyro_heading_raw = gyro_heading,
+  gyro_heading_diff = angle_dist(gyro_heading, lag(gyro_heading,1)),
+  gyro_heading_diff = ifelse(is.na(gyro_heading_diff), 0, gyro_heading_diff),
+  gyro_heading = cumsum(gyro_heading_diff),
+  speed_diff = speed_mph - lag(speed_mph, 1),
+  turn_aspect = factor(case_when(
+    between(time_cst, ymd_hms("2019-05-27 16:58:01", tz = "US/Central"), ymd_hms("2019-05-27 16:58:10", tz = "US/Central")) ~ "Approach",
+    between(time_cst, ymd_hms("2019-05-27 16:58:11", tz = "US/Central"), ymd_hms("2019-05-27 17:00:03", tz = "US/Central")) ~ "Waiting",
+                          between(time_cst, ymd_hms("2019-05-27 17:00:04", tz = "US/Central"), ymd_hms("2019-05-27 17:00:15", tz = "US/Central")) ~ "Turning", .default = "Unrelated"),
+                       levels = c("Approach", "Waiting", "Turning", "Unrelated"))
+)
+
+nds_sf16 <- nds_data16 |> sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+                                crs = "WGS84")
+
+nds_data16_sd <- crosstalk::SharedData$new(nds_data16)
+nds_sf16_sd <- crosstalk::SharedData$new(nds_sf16)
+left_turn_id <- driveplot(shareddata = nds_sf16_sd,
+                          x = time_cst,
+                          ys = c(speed_mph, gyro_heading, gyro_heading_diff, gps_pdop),
+                          colorvar = turn_aspect,
+                          maplabel = time_cst,
+                          colorpalette = "viridis",
+                          xlabel = "Time (CST)",
+                          ylabels = c("Speed (MPH)", "Gyro Heading",
+                                      "1 s Lagged Difference in Gyro Heading", "GPS PDOP"),
+                          legendtitle = "Left Turn Behavior",
+                          height = "50vh")
+left_turn_id
 # Saved manually as RJournal/figures/left_turn_id.html
-knitr::include_url("figures/left_turn_id.html")
+#knitr::include_url("figures/left_turn_id.html")
 ```
 
 ```{r leftturnalt1, eval = FALSE, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from west to south of particular interest. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
@@ -434,12 +441,20 @@ left_turn_id_alt2 <- driveplot(shareddata = nds_sf24_sd,
 
 ```
 
-```{r leftturn-screenshot, fig.cap = "Identifying a left turn based on low speed and changes in heading. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r}
+#| label: fig-leftturn-screenshot
+#| fig-cap: "Identifying a left turn based on low speed and changes in heading. Visit the online version to see the interactive plot map."
+#| eval: !expr knitr::is_latex_output()
+
 # webshot2::webshot("figures/left_turn_id.html", "figures/left_turn_id.png", zoom = 2)
 knitr::include_graphics("figures/left_turn_id.png")
 ```
 
-```{r leftturnzoom, fig.cap="Zooming in on the left turn.", fig.alt="Zoomed-in view of the left turn of interest. On the left is a map of the vehicle trajectory at the intersection. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The plots highlight speed near 0 while the vehicle is waiting to turn. During the turn, there is a dip in the 1-second lag in the gyroscopic heading before resuming its flat pattern."}
+```{r}
+#| label: fig-leftturnzoom
+#| fig-cap: "Zooming in on the left turn."
+#| fig-alt: "Zoomed-in view of the left turn of interest. On the left is a map of the vehicle trajectory at the intersection. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The plots highlight speed near 0 while the vehicle is waiting to turn. During the turn, there is a dip in the 1-second lag in the gyroscopic heading before resuming its flat pattern."
+
 knitr::include_graphics("figures/left_turn_id_zoom.png")
 ```
 
