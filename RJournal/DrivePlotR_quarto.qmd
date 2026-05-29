@@ -579,18 +579,27 @@ shared_drive <- crosstalk::SharedData$new(drive7)
 
 iv. Create plot maps with DrivePlotR.
 
-Although our main intention for DrivePlotR is to create linked visualizations with a map and companion graphs, we also provide functions so users can create separate maps or companion graphs. A basic standalone map, such as the one in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-map)', '\\@ref(fig:basic-map-screenshot)'))`, can be created as follows:
+Although our main intention for DrivePlotR is to create linked visualizations with a map and companion graphs, we also provide functions so users can create separate maps or companion graphs. A basic standalone map, such as the one in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-basic-map', '@fig-basic-map-screenshot)'))`, can be created as follows:
 
 ```{r mapcode, echo=TRUE, eval=FALSE}
 driveplot_map(shareddata = shared_drive)
 ```
 
-```{r basic-map, fig.cap="A basic standalone map.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic map showing a vehicle trajectory as a sequence of blue points."}
+```{r}
+#| label: fig-basic-map
+#| fig-cap: "A basic standalone map."
+#| eval: !expr knitr::is_html_output()
+#| fig-alt: "Basic map showing a vehicle trajectory as a sequence of blue points."
 # Saved manually as RJournal/figures/basic_map.html
-knitr::include_url("figures/basic_map.html")
+# knitr::include_url("figures/basic_map.html")
+driveplot_map(shareddata = shared_drive, mapheight = "50vh")
 ```
 
-```{r basic-map-screenshot, fig.cap="A basic standalone map. Visit the online version to see the interactive map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r}
+#| label: fig-basic-map-screenshot
+#| fig-cap: "A basic standalone map. Visit the online version to see the interactive map."
+#| eval: !expr knitr::is_latex_output()
+
 # webshot2::webshot(here::here("RJournal/figures/basic_map.html"),
 #                   here::here("RJournal/figures/basic_map.png"),
 #                   delay = 10,
