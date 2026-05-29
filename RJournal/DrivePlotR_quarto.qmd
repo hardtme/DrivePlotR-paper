@@ -143,7 +143,7 @@ We allow flexibility in how users provide location data to DrivePlotR functions.
 
 Users can choose to have a label appear when they hover the cursor over points on the map. This optional label conveys additional information of the analyst's choice about the point, e.g., time, GPS coordinates, etc. In addition, DrivePlotR allows users to change the color of the points on the map to a particular color of their choice or to associate the color of the map points with a variable from the data. This color choice will also be applied to the companion graphs. For the color palettes, the user can choose from one of four viridis color palettes [@smithMatplotlibColormaps2015] as implemented in the viridisLite R package [@garnierViridisLiteColorblindfriendlyColor2024]: viridis, magma, inferno, and plasma. We chose these color palettes for their compatibility with both Leaflet and the ggplot2 package [@wickhamGgplot2ElegantGraphics2016], which is used in the creation of the companion graphs. The viridis color palettes provide other benefits as well.
 
-The viridis color palettes are designed to provide uniform color contrasts, i.e, less distortion from difference in the data to difference in the perceived color differences [@smithMatplotlibColormaps2015]. Here, color is typically used to map the direction (and some of the speed) of a drive. The viridis color palettes ensure that points are visible on a busy background, such as the Open Street Map tiles. To make even light colors in the scheme stand out on a white background, we use a (very thin) ring of gray around each dot to increase the contrast between point and background. This contrast can be seen in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:leftturn)', '\\@ref(fig:leftturn-screenshot)'))`.
+The viridis color palettes are designed to provide uniform color contrasts, i.e, less distortion from difference in the data to difference in the perceived color differences [@smithMatplotlibColormaps2015]. Here, color is typically used to map the direction (and some of the speed) of a drive. The viridis color palettes ensure that points are visible on a busy background, such as the Open Street Map tiles. To make even light colors in the scheme stand out on a white background, we use a (very thin) ring of gray around each dot to increase the contrast between point and background. This contrast can be seen in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-leftturn', '@fig-leftturn-screenshot'))`.
 
 ## Companion Graphs {#sec-companions}
 
@@ -707,7 +707,7 @@ driveplot(
 ```
 <!-- Saved manually as RJournal/figures/teaser.html using RStudio Viewer Export -->
 
-As we mentioned previously, users can transform arguments to DrivePlotR functions when they are specified within the function call. In the example in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-plotmap)', '\\@ref(fig:transform-plotmap-screenshot)'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W).
+As we mentioned previously, users can transform arguments to DrivePlotR functions when they are specified within the function call. In the example in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-transform-plotmap', '@fig-transform-plotmap-screenshot'))`, speed in miles per hour (MPH) is converted to kilometers per hour (KPH), while gyro heading numbers are translated into general directions (N, S, E, W).
 
 ```{r transform-plotmap-code, echo=TRUE, eval=FALSE}
 driveplot(
@@ -732,37 +732,46 @@ driveplot(
 )
 ```
 
-```{r transform-plotmap, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="A DrivePlotR plot map showing the same drive as in Figure 1. For this plot map, transformations were performed in the function arguments to convert speed from MPH to KPH and convert heading from degree values to general heading directions (N, S, E, W)."}
-# driveplot(
-#   shareddata = shared_drive,
-#   x = time_cst,
-#   ys = c(
-#     speed_mph * 1.60934,
-#     c("N", "E", "S", "W")[findInterval(
-#       (gyro_heading + 45) %% 360,
-#       c(90, 180, 270)
-#     ) + 1],
-#     gps_pdop
-#   ),
-#   colorvar = gps_minute,
-#   maplabel = time_cst,
-#   colorpalette = "viridis",
-#   xlabel = "Time",
-#   ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
-#   showlegend = TRUE,
-#   legendtitle = "Minute",
-#   plottitle = "A Drive in Omaha, NE"
-# )
+```{r}
+#| label: fig-transform-plotmap
+#| fig-cap: "A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call."
+#| eval: !expr knitr::is_html_output()
+#| fig-alt: "A DrivePlotR plot map showing the same drive as in Figure 1. For this plot map, transformations were performed in the function arguments to convert speed from MPH to KPH and convert heading from degree values to general heading directions (N, S, E, W)."
+
+driveplot(
+  shareddata = shared_drive,
+  x = time_cst,
+  ys = c(
+    speed_mph * 1.60934,
+    c("N", "E", "S", "W")[findInterval(
+      (gyro_heading + 45) %% 360,
+      c(90, 180, 270)
+    ) + 1],
+    gps_pdop
+  ),
+  colorvar = gps_minute,
+  maplabel = time_cst,
+  colorpalette = "viridis",
+  xlabel = "Time",
+  ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
+  showlegend = TRUE,
+  legendtitle = "Minute",
+  plottitle = "A Drive in Omaha, NE",
+  height = "50vh"
+)
 # Saved manually as RJournal/figures/transform_plotmap.html using RStudio Viewer Export
 # webshot2::webshot(here::here("RJournal/figures/transform_plotmap.html"),
 #                   file = here::here("RJournal/figures/transform_plotmap.png"),
 #                   delay = 1,
 #                   zoom = 2)
-
-knitr::include_url("figures/transform_plotmap.html")
+#knitr::include_url("figures/transform_plotmap.html")
 ```
 
-```{r transform-plotmap-screenshot, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r}
+#| label: fig-transform-plotmap-screenshot
+#| fig-cap: "A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map."
+#| eval: !expr knitr::is_latex_output()
+
 knitr::include_graphics("figures/transform_plotmap.png")
 ```
 
