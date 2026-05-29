@@ -29,8 +29,14 @@ author:
     email: basulto@iastate.edu
     orcid: 0000-0002-5205-2190
 type: package
-output:
-  rjtools::rjournal_article
+format: 
+    html:
+      self-contained: true
+      toc: false
+    pdf:
+      toc: false
+      link-citations: true
+      number-sections: true
 bibliography: RJreferences.bib
 ---
 
@@ -149,7 +155,11 @@ We use functions from ggplot2 [@wickhamGgplot2ElegantGraphics2016] to create the
 
 A widely used convention for values representing angles is to report them in a bounded interval of width 360 degrees (or $2\pi$ radians). The interval of $[0, 360)$ (or $[0, 2\pi)$) corresponds to the first congruence class, and ensures that any mathematical calculations are well-defined. However, this restriction introduces discontinuities in the data that visually are very distracting, because they break two very basic (implicit) Gestalt principles of (1) continuity and (2) grouping. The violation of the first Gestalt principle is obvious. The grouping principle means that items shown in close proximity are expected to be close in the data, and correspondingly, items shown far apart are expected to be far apart in the data. If the car is driven at an angle close to $0^\circ$, the reported angles might fall in the two spatially separated intervals of $[0,5]$ degrees and $[355, 360)$ degrees. Visually, the separation between these intervals falsely suggests two clusters of data.
 
-```{r angles, fig.cap = "Raw direction (top) and continuity-corrected direction (bottom).", fig.alt="Two stacked time-series plots of vehicle heading angle over time. The top plot features the raw heading and includes abrupt jumps in heading when the vehicle drives north and the heading changes from small positive values near 0 degrees to values near 360 degrees. The bottom plot shows the corrected heading, for which the abrupt jumps have been smoothed."}
+```{r}
+#| label: fig-angles
+#| fig-cap: "Raw direction (top) and continuity-corrected direction (bottom)."
+#| fig-alt: "Two stacked time-series plots of vehicle heading angle over time. The top plot features the raw heading and includes abrupt jumps in heading when the vehicle drives north and the heading changes from small positive values near 0 degrees to values near 360 degrees. The bottom plot shows the corrected heading, for which the abrupt jumps have been smoothed."
+
 nds_data7 <- nds_data |> filter(drive == 7)
 nds_data7 <- nds_data7 |>
   mutate(
@@ -174,41 +184,50 @@ nds_data7 |>
   xlab("Time")
 ```
 
-As a remedy, consider that in the context of telematics data, trajectories are observed, i.e., temporal sequences of angles are available. Movement and the associated changes in directions are, by definition, continuous in time and space. In the example in Figure \@ref(fig:angles), the angles were only observed at a frequency of 1 Hz, but it is reasonable to assume that changes in one second fell within a range of $\pm 180^\circ$ (or $\pm \pi$) under regular driving conditions. This assumption allows us to apply a continuity-correction for angle variables by picking that congruence class for successive angles that keeps the (angle) distance to their predecessor below $\pm 180^\circ$. Figure \@ref(fig:angles) gives an example: both plots show the same directions over time, in the continuity-corrected version, the two segments with points "floating" at the top of the chart are moved below the horizontal line at $0^\circ$. In general, the continuity correction shifts angles by at most one congruence class up or down. Unless otherwise mentioned, all angle variables in this article are displayed using this continuity correction.
+As a remedy, consider that in the context of telematics data, trajectories are observed, i.e., temporal sequences of angles are available. Movement and the associated changes in directions are, by definition, continuous in time and space. In the example in @fig-angles, the angles were only observed at a frequency of 1 Hz, but it is reasonable to assume that changes in one second fell within a range of $\pm 180^\circ$ (or $\pm \pi$) under regular driving conditions. This assumption allows us to apply a continuity-correction for angle variables by picking that congruence class for successive angles that keeps the (angle) distance to their predecessor below $\pm 180^\circ$. @fig-angles gives an example: both plots show the same directions over time, in the continuity-corrected version, the two segments with points "floating" at the top of the chart are moved below the horizontal line at $0^\circ$. In general, the continuity correction shifts angles by at most one congruence class up or down. Unless otherwise mentioned, all angle variables in this article are displayed using this continuity correction.
 
-```{r four-plots, fig.cap="Four companion graphs.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Four stacked time-series plots showing vehicle speed (MPH), GPS heading (degrees), gyroscropic heading (degrees) and GPS PDOP (a measure of GPS data quality). The second plot of GPS heading displays discontinuities, while the third plot of gyroscopic heading is much more consistent."}
-# nds_sf7 <- nds_data7 |>
-#   st_as_sf(coords = c("gps_long", "gps_lat"),
-#            crs = "WGS84")
-# nds_sf7_sd <- SharedData$new(nds_sf7)
-# 
-# four <- driveplot_companions(shareddata = nds_sf7_sd,
-#                              x = time_cst,
-#                              ys = c(speed_mph, gps_heading, gyro_heading, gps_pdop),
-#                              colorvar = gps_minute,
-#                              xlabel = "Time",
-#                              ylabels = c("Speed (MPH)", "GPS Heading", "Gyro Heading", "GPS PDOP"),
-#                              colorpalette = "viridis",
-#                              showlegend = TRUE,
-#                              legendtitle = "Minute",
-#                              spacing = 0.05,
-#                              plotheight = '100vh'
-#                              )
+```{r}
+#| label: fig-four-plots
+#| fig-cap: "Four companion graphs."
+#| eval: !expr knitr::is_html_output()
+#| fig-alt: "Four stacked time-series plots showing vehicle speed (MPH), GPS heading (degrees), gyroscropic heading (degrees) and GPS PDOP (a measure of GPS data quality). The second plot of GPS heading displays discontinuities, while the third plot of gyroscopic heading is much more consistent."
 
+nds_sf7 <- nds_data7 |>
+  st_as_sf(coords = c("gps_long", "gps_lat"),
+           crs = "WGS84")
+nds_sf7_sd <- SharedData$new(nds_sf7)
+
+four <- driveplot_companions(shareddata = nds_sf7_sd,
+                             x = time_cst,
+                             ys = c(speed_mph, gps_heading, gyro_heading, gps_pdop),
+                             colorvar = gps_minute,
+                             xlabel = "Time",
+                             ylabels = c("Speed (MPH)", "GPS Heading", "Gyro Heading", "GPS PDOP"),
+                             colorpalette = "viridis",
+                             showlegend = TRUE,
+                             legendtitle = "Minute",
+                             spacing = 0.05,
+                             plotheight = '50vh'
+                             )
+four
 # Saved manually as RJournal/figures/four_graphs.html using RStudio Viewer Export
 # webshot2::webshot(here::here("RJournal/figures/four_graphs.html"),
 #                   file = here::here("RJournal/figures/four_graphs.png"),
 #                   delay = 1,
 #                   zoom = 2)
 
-knitr::include_url("figures/four_graphs.html")
+# knitr::include_url("figures/four_graphs.html")
 ```
 
-```{r, four-plots-screenshot, fig.cap="Four companion graphs. Visit the online version to see the interactive version.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r}
+#| label: fig-four-plots-screenshot
+#| fig-cap: "Four companion graphs. Visit the online version to see the interactive version."
+#| eval: !expr knitr::is_latex_output()
+
 knitr::include_graphics("figures/four_graphs.png")
 ```
 
-Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:four-plots)', '\\@ref(fig:four-plots-screenshot)'))` gives a more detailed insight into the drive using a stack of four companion plots. The two middle plots show two different ways of measuring the heading, or the direction the vehicle is traveling. The second of the four plots shows the heading as measured by the GPS sensor mounted in the car while the third of the four plots shows the heading as measured by the gyroscope mounted in the car. The two sensors clearly measure heading differently, with the GPS heading being much less consistent than the gyro heading. DrivePlotR users can select the points where the GPS heading is particularly inconsistent and see if there are certain types of locations or driving scenarios where this behavior tends to occur.
+`r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-four-plots', '@fig-four-plots-screenshot'))` gives a more detailed insight into the drive using a stack of four companion plots. The two middle plots show two different ways of measuring the heading, or the direction the vehicle is traveling. The second of the four plots shows the heading as measured by the GPS sensor mounted in the car while the third of the four plots shows the heading as measured by the gyroscope mounted in the car. The two sensors clearly measure heading differently, with the GPS heading being much less consistent than the gyro heading. DrivePlotR users can select the points where the GPS heading is particularly inconsistent and see if there are certain types of locations or driving scenarios where this behavior tends to occur.
 
 # Use Cases {#usecases}
 
