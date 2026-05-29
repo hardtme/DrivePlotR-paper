@@ -570,7 +570,7 @@ knitr::include_url("figures/basic_graph.html")
 knitr::include_graphics("figures/basic_graph.png")
 ```
 
-We developed \pkg{DrivePlotR} so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
+We developed \pkg{DrivePlotR} so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. The resulting companion graph is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-graph)', '\\@ref(fig:transform-graph-screenshot)'))`. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
 
 ```{r transform-graph-code, echo = TRUE, eval = FALSE}
 driveplot_companion(

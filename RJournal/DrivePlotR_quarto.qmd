@@ -579,7 +579,7 @@ shared_drive <- crosstalk::SharedData$new(drive7)
 
 iv. Create plot maps with DrivePlotR.
 
-Although our main intention for DrivePlotR is to create linked visualizations with a map and companion graphs, we also provide functions so users can create separate maps or companion graphs. A basic standalone map, such as the one in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-basic-map', '@fig-basic-map-screenshot)'))`, can be created as follows:
+Although our main intention for DrivePlotR is to create linked visualizations with a map and companion graphs, we also provide functions so users can create separate maps or companion graphs. A basic standalone map, such as the one in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-basic-map', '@fig-basic-map-screenshot'))`, can be created as follows:
 
 ```{r mapcode, echo=TRUE, eval=FALSE}
 driveplot_map(shareddata = shared_drive)
@@ -607,7 +607,7 @@ driveplot_map(shareddata = shared_drive, mapheight = "50vh")
 knitr::include_graphics("figures/basic_map.png")
 ```
 
-We provide functionality to create standalone companion graphs in addition to maps. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
+We provide functionality to create standalone companion graphs in addition to maps. The basic companion graph created by the code below is shown in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-basic-graph', '@fig-basic-graph-screenshot'))`.
 
 ```{r basic-graph-code, echo=TRUE, eval=FALSE}
 driveplot_companion(
@@ -619,12 +619,28 @@ driveplot_companion(
 )
 ```
 
-```{r basic-graph, fig.cap="A basic companion graph for speed.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (MPH) over time. The points are all blue."}
+```{r}
+#| label: fig-basic-graph
+#| fig-cap: "A basic companion graph for speed."
+#| eval: !expr knitr::is_html_output()
+#| fig-alt: "Basic companion graph showing a time series plot of speed (MPH) over time. The points are all blue."
+
+driveplot_companion(
+  shareddata = shared_drive,
+  x = time_cst,
+  y = speed_mph,
+  xlabel = "Time",
+  ylabel = "Speed (MPH)"
+)
 # saved manually as figures/basic_graph.html
-knitr::include_url("figures/basic_graph.html")
+#knitr::include_url("figures/basic_graph.html")
 ```
 
-```{r basic-graph-screenshot, fig.cap="A basic companion graph for speed. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r}
+#| label: fig-basic-graph-screenshot
+#| fig-cap: "A basic companion graph for speed. Visit the online version to see the interactive companion graph."
+#| eval: !expr knitr::is_latex_output()
+
 # webshot2::webshot(here::here("RJournal/figures/basic_graph.html"),
 #                   here::here("RJournal/figures/basic_graph.png"),
 #                   delay = 10,
@@ -632,7 +648,7 @@ knitr::include_url("figures/basic_graph.html")
 knitr::include_graphics("figures/basic_graph.png")
 ```
 
-We developed DrivePlotR so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
+We developed DrivePlotR so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-basic-graph', '@fig-basic-graph-screenshot'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. The resulting companion graph is shown in `r knitr::asis_output(ifelse(knitr::is_html_output(), '@fig-transform-graph', '@fig-transform-graph-screenshot'))`. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions()`and `driveplot()` as well.
 
 ```{r transform-graph-code, echo = TRUE, eval = FALSE}
 driveplot_companion(
@@ -644,12 +660,28 @@ driveplot_companion(
 )
 ```
 
-```{r transform-graph, fig.cap="A companion graph where time and speed have been transformed within the function arguments.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (KPH) over time. The transformation from MPH to KPH was performed in the function arguments. The points are all blue."}
+```{r}
+#| label: fig-transform-graph
+#| fig-cap: "A companion graph where time and speed have been transformed within the function arguments."
+#| eval: !expr knitr::is_html_output()
+#| fig-alt: "Basic companion graph showing a time series plot of speed (KPH) over time. The transformation from MPH to KPH was performed in the function arguments. The points are all blue."
+
 # Saved manually as RJournal/figures/transform_graph.html
-knitr::include_url("figures/transform_graph.html")
+#knitr::include_url("figures/transform_graph.html")
+driveplot_companion(
+  shareddata = shared_drive,
+  x = as.POSIXct(time_cst, tz = "UTC"),
+  y = speed_mph * 1.609,
+  xlabel = "Time (UTC)",
+  ylabel = "Speed (KPH)"
+)
 ```
 
-```{r transform-graph-screenshot, fig.cap="A basic companion graph where time and speed have been transformed within the function arguments. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r}
+#| label: fig-transform-graph-screenshot
+#| fig-cap: "A basic companion graph where time and speed have been transformed within the function arguments. Visit the online version to see the interactive companion graph."
+#| eval: !expr knitr::is_latex_output()
+
 # webshot2::webshot(here::here("RJournal/figures/transform_graph.html"),
 #                   here::here("RJournal/figures/transform_graph.png"),
 #                   delay = 10,
