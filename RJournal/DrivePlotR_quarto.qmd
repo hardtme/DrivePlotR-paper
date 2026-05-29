@@ -550,9 +550,13 @@ We now outline the basic workflow for making visualizations with DrivePlotR. The
 
 -   `driveplot_companion()` (creates a single companion graph)
 
-We show the relationship between the main DrivePlotR functions in Figure \@ref(fig:functions). DrivePlotR also contains several internal helper functions that are not user-facing. We need these functions to ensure the four main functions of DrivePlotR work as expected.
+We show the relationship between the main DrivePlotR functions in @fig-functions. DrivePlotR also contains several internal helper functions that are not user-facing. We need these functions to ensure the four main functions of DrivePlotR work as expected.
 
-```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack.", fig.alt="Diagram showing the relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions. The function driveplot\\_companions in turn calls driveplot\\_companion."}
+```{r}
+#| label: fig-functions
+#| fig-cap: "The relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack."
+#| fig-alt: "Diagram showing the relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions. The function driveplot\\_companions in turn calls driveplot\\_companion."
+
 knitr::include_graphics("figures/function_hierarchy.png")
 ```
 
