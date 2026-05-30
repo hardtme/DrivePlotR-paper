@@ -37,13 +37,18 @@ format:
       toc: false
       link-citations: true
       number-sections: true
+      geometry: 
+        - top=1in
+        - bottom=1in
+        - left=1in
+        - right=1in
 bibliography: RJreferences.bib
 ---
 
 ```{r}
 #| label: setup
 #| include: false
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, out.width = "100%")
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, out.width = "80%")
 library(DrivePlotR)
 library(tidyverse)
 library(gpsdriving)
@@ -785,3 +790,4 @@ One current limitation of DrivePlotR is that color and position are the only pos
 
 The ideas behind DrivePlotR visualizations are also applicable to other data sources. Similar visualizations as for NDS and CV data can be created for micromobility data from bicycles or scooters. We have also encountered interest in using DrivePlotR to create interactive visualizations for public transit systems, such as bus routes. For a precision agriculture application, DrivePlotR can create an interactive visualization of the GPS location and seeding rate for a tractor as it is driven through a field to plant this year's corn crop. DrivePlotR can also help analyze the paths and product application rates (e.g., salt) of snowplows as they clear roads during a blizzard. These are only a few of the possibilities for DrivePlotR visualizations to make multivariate high-resolution spatio-temporal data easier to understand and share.
 
+# References {.unnumbered}
