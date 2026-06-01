@@ -173,31 +173,29 @@ nds_data7 |>
 As a remedy, consider that in the context of telematics data, trajectories are observed, i.e., temporal sequences of angles are available. Movement and the associated changes in directions are, by definition, continuous in time and space. In the example in Figure \@ref(fig:angles), the angles were only observed at a frequency of 1 Hz, but it is reasonable to assume that changes in one second fell within a range of $\pm 180^\circ$ (or $\pm \pi$) under regular driving conditions. This assumption allows us to apply a continuity-correction for angle variables by picking that congruence class for successive angles that keeps the (angle) distance to their predecessor below $\pm 180^\circ$. Figure \@ref(fig:angles) gives an example: both plots show the same directions over time, in the continuity-corrected version, the two segments with points "floating" at the top of the chart are moved below the horizontal line at $0^\circ$. In general, the continuity correction shifts angles by at most one congruence class up or down. Unless otherwise mentioned, all angle variables in this article are displayed using this continuity correction.
 
 ```{r four-plots, fig.cap="Four companion graphs.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Four stacked time-series plots showing vehicle speed (MPH), GPS heading (degrees), gyroscropic heading (degrees) and GPS PDOP (a measure of GPS data quality). The second plot of GPS heading displays discontinuities, while the third plot of gyroscopic heading is much more consistent."}
-# nds_sf7 <- nds_data7 |>
-#   st_as_sf(coords = c("gps_long", "gps_lat"),
-#            crs = "WGS84")
-# nds_sf7_sd <- SharedData$new(nds_sf7)
-# 
-# four <- driveplot_companions(shareddata = nds_sf7_sd,
-#                              x = time_cst,
-#                              ys = c(speed_mph, gps_heading, gyro_heading, gps_pdop),
-#                              colorvar = gps_minute,
-#                              xlabel = "Time",
-#                              ylabels = c("Speed (MPH)", "GPS Heading", "Gyro Heading", "GPS PDOP"),
-#                              colorpalette = "viridis",
-#                              showlegend = TRUE,
-#                              legendtitle = "Minute",
-#                              spacing = 0.05,
-#                              plotheight = '100vh'
-#                              )
+nds_sf7 <- nds_data7 |>
+  st_as_sf(coords = c("gps_long", "gps_lat"),
+           crs = "WGS84")
+nds_sf7_sd <- SharedData$new(nds_sf7)
 
+four <- driveplot_companions(shareddata = nds_sf7_sd,
+                             x = time_cst,
+                             ys = c(speed_mph, gps_heading, gyro_heading, gps_pdop),
+                             colorvar = gps_minute,
+                             xlabel = "Time",
+                             ylabels = c("Speed (MPH)", "GPS Heading", "Gyro Heading", "GPS PDOP"),
+                             colorpalette = "viridis",
+                             showlegend = TRUE,
+                             legendtitle = "Minute",
+                             spacing = 0.05,
+                             plotheight = '100vh'
+                             )
+four
 # Saved manually as RJournal/figures/four_graphs.html using RStudio Viewer Export
 # webshot2::webshot(here::here("RJournal/figures/four_graphs.html"),
 #                   file = here::here("RJournal/figures/four_graphs.png"),
 #                   delay = 1,
 #                   zoom = 2)
-
-knitr::include_url("figures/four_graphs.html")
 ```
 
 ```{r, four-plots-screenshot, fig.cap="Four companion graphs. Visit the online version to see the interactive version.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
@@ -258,47 +256,48 @@ nds_data7 |>
 
 ```{r leftturn, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from east to north of particular interest. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), a 1-second lag in gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, waiting, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
 # Data for left turn identification example
-# nds_data16 <- nds_data |> filter(drive == 16)
-# nds_data16 <- nds_data16 |>
-#   mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
-#          gps_minute = as.factor(minute(time_cst)))
-# 
-# nds_data16 <- nds_data16 |> mutate(
-#   gps_heading_raw = gps_heading,
-#   gps_heading_diff = angle_dist(gps_heading, lag(gps_heading,1)),
-#   gps_heading_diff = ifelse(is.na(gps_heading_diff), gps_heading, gps_heading_diff),
-#   gps_heading_diff_dampen = ifelse(between(gps_heading_diff,-20,20), gps_heading_diff, sign(gps_heading_diff)*20),
-#   gps_heading = cumsum(gps_heading_diff),
-#   gps_heading_corrected = cumsum(gps_heading_diff_dampen),
-#   gyro_heading_raw = gyro_heading,
-#   gyro_heading_diff = angle_dist(gyro_heading, lag(gyro_heading,1)),
-#   gyro_heading_diff = ifelse(is.na(gyro_heading_diff), 0, gyro_heading_diff),
-#   gyro_heading = cumsum(gyro_heading_diff),
-#   speed_diff = speed_mph - lag(speed_mph, 1),
-#   turn_aspect = factor(case_when(
-#     between(time_cst, ymd_hms("2019-05-27 16:58:01", tz = "US/Central"), ymd_hms("2019-05-27 16:58:10", tz = "US/Central")) ~ "Approach",
-#     between(time_cst, ymd_hms("2019-05-27 16:58:11", tz = "US/Central"), ymd_hms("2019-05-27 17:00:03", tz = "US/Central")) ~ "Waiting",
-#                           between(time_cst, ymd_hms("2019-05-27 17:00:04", tz = "US/Central"), ymd_hms("2019-05-27 17:00:15", tz = "US/Central")) ~ "Turning", .default = "Unrelated"),
-#                        levels = c("Approach", "Waiting", "Turning", "Unrelated"))
-# )
-# 
-# nds_sf16 <- nds_data16 |> sf::st_as_sf(coords = c("gps_long", "gps_lat"),
-#                                 crs = "WGS84")
-# 
-# nds_data16_sd <- crosstalk::SharedData$new(nds_data16)
-# nds_sf16_sd <- crosstalk::SharedData$new(nds_sf16)
-# left_turn_id <- driveplot(shareddata = nds_sf16_sd,
-#                           x = time_cst,
-#                           ys = c(speed_mph, gyro_heading, gyro_heading_diff, gps_pdop),
-#                           colorvar = turn_aspect,
-#                           maplabel = time_cst,
-#                           colorpalette = "viridis",
-#                           xlabel = "Time (CST)",
-#                           ylabels = c("Speed (MPH)", "Gyro Heading",
-#                                       "1 s Lagged Difference in Gyro Heading", "GPS PDOP"),
-#                           legendtitle = "Left Turn Behavior")
-# Saved manually as RJournal/figures/left_turn_id.html
-knitr::include_url("figures/left_turn_id.html")
+nds_data16 <- nds_data |> filter(drive == 16)
+nds_data16 <- nds_data16 |>
+  mutate(time_cst = ymd_hms(time_cst, tz = "US/Central"),
+         gps_minute = as.factor(minute(time_cst)))
+
+nds_data16 <- nds_data16 |> mutate(
+  gps_heading_raw = gps_heading,
+  gps_heading_diff = angle_dist(gps_heading, lag(gps_heading,1)),
+  gps_heading_diff = ifelse(is.na(gps_heading_diff), gps_heading, gps_heading_diff),
+  gps_heading_diff_dampen = ifelse(between(gps_heading_diff,-20,20), gps_heading_diff, sign(gps_heading_diff)*20),
+  gps_heading = cumsum(gps_heading_diff),
+  gps_heading_corrected = cumsum(gps_heading_diff_dampen),
+  gyro_heading_raw = gyro_heading,
+  gyro_heading_diff = angle_dist(gyro_heading, lag(gyro_heading,1)),
+  gyro_heading_diff = ifelse(is.na(gyro_heading_diff), 0, gyro_heading_diff),
+  gyro_heading = cumsum(gyro_heading_diff),
+  speed_diff = speed_mph - lag(speed_mph, 1),
+  turn_aspect = factor(case_when(
+    between(time_cst, ymd_hms("2019-05-27 16:58:01", tz = "US/Central"), ymd_hms("2019-05-27 16:58:10", tz = "US/Central")) ~ "Approach",
+    between(time_cst, ymd_hms("2019-05-27 16:58:11", tz = "US/Central"), ymd_hms("2019-05-27 17:00:03", tz = "US/Central")) ~ "Waiting",
+                          between(time_cst, ymd_hms("2019-05-27 17:00:04", tz = "US/Central"), ymd_hms("2019-05-27 17:00:15", tz = "US/Central")) ~ "Turning", .default = "Unrelated"),
+                       levels = c("Approach", "Waiting", "Turning", "Unrelated"))
+)
+
+nds_sf16 <- nds_data16 |> sf::st_as_sf(coords = c("gps_long", "gps_lat"),
+                                crs = "WGS84")
+
+nds_data16_sd <- crosstalk::SharedData$new(nds_data16)
+nds_sf16_sd <- crosstalk::SharedData$new(nds_sf16)
+left_turn_id <- driveplot(shareddata = nds_sf16_sd,
+                          x = time_cst,
+                          ys = c(speed_mph, gyro_heading, gyro_heading_diff, gps_pdop),
+                          colorvar = turn_aspect,
+                          maplabel = time_cst,
+                          colorpalette = "viridis",
+                          xlabel = "Time (CST)",
+                          ylabels = c("Speed (MPH)", "Gyro Heading",
+                                      "1 s Lagged Difference in Gyro Heading", "GPS PDOP"),
+                          legendtitle = "Left Turn Behavior",
+                          height = "50vh")
+left_turn_id
+# Saved manually as RJournal/figures/left_turn_id.html using RStudio Viewer Export
 ```
 
 ```{r leftturnalt1, eval = FALSE, fig.cap = "Identifying a left turn based on low speed and changes in heading.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="DrivePlotR plot map showing an overview of a full drive. The map on the left shows the vehicle trajectory, including a left turn from west to south of particular interest. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The points on the map and the companion graphs are colored according to the turn component to which they belong: unrelated, approach, and turning. This image provides the overall view of the drive before zooming in on the left turn in the next figure."}
@@ -451,7 +450,7 @@ Harsh acceleration and hard braking are undesirable driving behaviors that are k
 #   showlegend = TRUE,
 #   legendtitle = "Type of Acceleration Event",
 #   spacing = 0.05)
-# Saved manually as acceleration_events_none.html
+# Saved manually as RJournal/figures/acceleration_events_none.html using RStudio Viewer Export
 # Took screenshot of plot zoomed in on the medium acceleration event
 knitr::include_graphics("figures/accel_event_zoom_none.png")
 ```
@@ -484,7 +483,7 @@ Figure \@ref(fig:rightturn) shows a low acceleration event detected during a dif
 #   showlegend = TRUE,
 #   legendtitle = "Type of Acceleration Event",
 #   spacing = 0.05)
-# Saved manually as figures/accel_event_right_turn_none.html
+# Saved manually as RJournal/figures/accel_event_right_turn_none.html using RStudio Viewer Export
 # Zoomed in screenshot in RJournal/figures/accel_event_right_turn_none.png
 knitr::include_graphics("figures/accel_event_right_turn_none.png")
 ```
@@ -533,8 +532,9 @@ driveplot_map(shareddata = shared_drive)
 ```
 
 ```{r basic-map, fig.cap="A basic standalone map.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic map showing a vehicle trajectory as a sequence of blue points."}
-# Saved manually as RJournal/figures/basic_map.html
-knitr::include_url("figures/basic_map.html")
+# Saved manually as RJournal/figures/basic_map.html using RStudio Viewer Export
+driveplot_map(shareddata = shared_drive,
+              mapheight = "50vh")
 ```
 
 ```{r basic-map-screenshot, fig.cap="A basic standalone map. Visit the online version to see the interactive map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
@@ -558,8 +558,14 @@ driveplot_companion(
 ```
 
 ```{r basic-graph, fig.cap="A basic companion graph for speed.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (MPH) over time. The points are all blue."}
-# saved manually as figures/basic_graph.html
-knitr::include_url("figures/basic_graph.html")
+# Saved manually as RJournal/figures/basic_graph.html using RStudio Viewer Export
+driveplot_companion(
+  shareddata = shared_drive,
+  x = time_cst,
+  y = speed_mph,
+  xlabel = "Time",
+  ylabel = "Speed (MPH)"
+)
 ```
 
 ```{r basic-graph-screenshot, fig.cap="A basic companion graph for speed. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
@@ -583,8 +589,14 @@ driveplot_companion(
 ```
 
 ```{r transform-graph, fig.cap="A companion graph where time and speed have been transformed within the function arguments.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="Basic companion graph showing a time series plot of speed (KPH) over time. The transformation from MPH to KPH was performed in the function arguments. The points are all blue."}
-# Saved manually as RJournal/figures/transform_graph.html
-knitr::include_url("figures/transform_graph.html")
+# Saved manually as RJournal/figures/transform_graph.html using RStudio Viewer Export
+driveplot_companion(
+  shareddata = shared_drive,
+  x = as.POSIXct(time_cst, tz = "UTC"),
+  y = speed_mph * 1.609,
+  xlabel = "Time (UTC)",
+  ylabel = "Speed (KPH)"
+)
 ```
 
 ```{r transform-graph-screenshot, fig.cap="A basic companion graph where time and speed have been transformed within the function arguments. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
@@ -639,33 +651,32 @@ driveplot(
 ```
 
 ```{r transform-plotmap, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="A DrivePlotR plot map showing the same drive as in Figure 1. For this plot map, transformations were performed in the function arguments to convert speed from MPH to KPH and convert heading from degree values to general heading directions (N, S, E, W)."}
-# driveplot(
-#   shareddata = shared_drive,
-#   x = time_cst,
-#   ys = c(
-#     speed_mph * 1.60934,
-#     c("N", "E", "S", "W")[findInterval(
-#       (gyro_heading + 45) %% 360,
-#       c(90, 180, 270)
-#     ) + 1],
-#     gps_pdop
-#   ),
-#   colorvar = gps_minute,
-#   maplabel = time_cst,
-#   colorpalette = "viridis",
-#   xlabel = "Time",
-#   ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
-#   showlegend = TRUE,
-#   legendtitle = "Minute",
-#   plottitle = "A Drive in Omaha, NE"
-# )
+driveplot(
+  shareddata = shared_drive,
+  x = time_cst,
+  ys = c(
+    speed_mph * 1.60934,
+    c("N", "E", "S", "W")[findInterval(
+      (gyro_heading + 45) %% 360,
+      c(90, 180, 270)
+    ) + 1],
+    gps_pdop
+  ),
+  colorvar = gps_minute,
+  maplabel = time_cst,
+  colorpalette = "viridis",
+  xlabel = "Time",
+  ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
+  showlegend = TRUE,
+  legendtitle = "Minute",
+  plottitle = "A Drive in Omaha, NE",
+  height = "50vh"
+)
 # Saved manually as RJournal/figures/transform_plotmap.html using RStudio Viewer Export
 # webshot2::webshot(here::here("RJournal/figures/transform_plotmap.html"),
 #                   file = here::here("RJournal/figures/transform_plotmap.png"),
 #                   delay = 1,
 #                   zoom = 2)
-
-knitr::include_url("figures/transform_plotmap.html")
 ```
 
 ```{r transform-plotmap-screenshot, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
