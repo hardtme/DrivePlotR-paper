@@ -13,13 +13,24 @@ The R Journal
 Dear Dr. Tanaka,
 \bigskip
 
-Please consider our article titled "DrivePlotR: Shareable Linked Plot Maps for Multivariate High-Resolution Spatio-Temporal Data" for publication in the R Journal.
+Please consider our article titled "DrivePlotR: Shareable Linked Plot Maps for 
+Multivariate High-Resolution Spatio-Temporal Data" for publication in the R 
+Journal.
 
-The manuscript introduces the new package called `DrivePlotR`, which creates interactive visualizations for vehicle trajectories. These visualizations display a map of the trajectory alongside graphs of other variables and are easy to share with collaborators. 
+The manuscript introduces the new package called `DrivePlotR`, which creates 
+interactive visualizations for vehicle trajectories. These visualizations 
+display a map of the trajectory alongside graphs of other variables and are 
+easy to share with collaborators. 
 
-`DrivePlotR` is not yet available on CRAN, but we will time the CRAN submission with the article. To save the CRAN team's time, we prefer to submit to `DrivePlotR` to CRAN once, after making any improvements suggested by the R Journal reviewers.
+`DrivePlotR` is not yet available on CRAN, but we will time the CRAN submission 
+with the article. To save the CRAN team's time, we prefer to submit 
+`DrivePlotR` to CRAN once, after making any improvements suggested by the 
+R Journal reviewers. 
 
-Readers of the R Journal will be interested in this article because it provides a new visualization tool for transportation data, a growing area of interest. The underlying structure of `DrivePlotR` will also inspire readers to create interactive visualization tools for their own applications.  
+Readers of the R Journal will be interested in this article because it provides 
+a new visualization tool for transportation data, a growing area of interest. 
+The underlying structure of `DrivePlotR` will also inspire readers to create 
+interactive visualization tools for their own applications.  
 
 \bigskip
 \bigskip
