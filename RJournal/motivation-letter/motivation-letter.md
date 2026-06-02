@@ -40,7 +40,7 @@ allowing flexibility for customization.
 Our manuscript includes multiple examples of use cases for visualizing
 real-world trajectory data with `DrivePlotR`. The package has been submitted to
 CRAN. In lieu of a vignette, we have included
-a detailed example in the README for the package's 
+a detailed example demonstrating the workflow in the README for the package's 
 [GitHub repo](https://github.com/hardtme/DrivePlotR) and 
 [`pkgdown` site](https://hardtme.github.io/DrivePlotR/).
 
