@@ -91,7 +91,7 @@ The three stacked graphs on the right-hand side of Figure \@ref(fig:teaser) show
 
 The interface of \pkg{DrivePlotR} visualizations consists of four components: the map, the companion graph(s), the infrastructure linking the visuals and enabling the interactivity, and the non-standard evaluation used within the package functions. Users can see the first two components (map and companion graph) through the interactive plot maps produced by \pkg{DrivePlotR}. The third and fourth components (infrastructure and non-standard evaluation) exist within the \pkg{DrivePlotR} codebase. Although invisible to the user, the infrastructure is the key component that controls the linked interactive plot maps produced by \pkg{DrivePlotR}. As a preliminary step, we detail the necessary data format to create \pkg{DrivePlotR} plot maps in [Section 2.1](#data). Afterward, in [Section 2.2](#interactivity), we describe the infrastructure component that enables the linked interactivity of \pkg{DrivePlotR} plot maps. Then we discuss the non-standard evaluation component used within \pkg{DrivePlotR} in [Section 2.3](#nse). We explain the creation of the map and the companion graph(s) components later on in [Section 3.1](#map) and [Section 3.2](#companions).
 
-## Data Format {#data}
+## Data format {#data}
 
 We assume that datasets used with \pkg{DrivePlotR} have one row for each observation. For example, if the data source is a DAS installed in a vehicle that records data every second, each row in the dataset represents one second during the drive. For each observation, the GPS coordinates (longitude and latitude in decimal degrees) are available, along with other information such as the vehicle's speed, heading, acceleration, etc. \pkg{DrivePlotR} accepts datasets with explicit longitude and latitude columns as well as datasets with a simple features geometry column, such as datasets in the format from \CRANpkg{sf} [@pebesmaSpatialDataScience2023]. If a simple features geometry column is present in the data, \pkg{DrivePlotR} assumes that the geometry type for the column is POINT because each row represents a single point in time and space. Other geometry types are incompatible with \pkg{DrivePlotR} plot maps and will cause errors.
 
@@ -111,7 +111,7 @@ We place the map and companion graph(s) side-by-side within the same visualizati
 
 As mentioned in [Section 1](#introduction), we created \pkg{DrivePlotR} with the goal of producing linked interactive vehicle trajectory plots that we could easily share with collaborators while still maintaining data privacy. We achieved this goal by utilizing the interactivity provided by \CRANpkg{crosstalk} [@chengCrosstalkInterWidgetInteractivity2023]. Because of \CRANpkg{crosstalk} functionality, we can save \pkg{DrivePlotR} plot maps within self-contained HTML files while still retaining all of the interactive functionality of the visuals. We can then share these HTML files with collaborators, who are still able to use the interactive features of the plot map from within the HTML file without the need for external hosting. Our \pkg{DrivePlotR} visualizations are easy to reproduce and update. We also stay within the domain of free, open-source software.
 
-## Non-Standard Evaluation {#nse}
+## Non-standard evaluation {#nse}
 
 We made the interface for the \pkg{DrivePlotR} functions look similar to the interface of the `qplot` function from \CRANpkg{ggplot2} [@wickhamGgplot2ElegantGraphics2016]. Although `qplot` is now deprecated, the one-line function interface with explicit arguments works well for our purposes. We expect that many users of \pkg{DrivePlotR} will be transportation professionals with little R programming experience, so a single function call with explicit arguments would work best. 
 \pkg{DrivePlotR} functions involve required mappings, mappings, and parameter settings. The required mappings include the `SharedData` object to be used in the visualization, as well as essential function arguments like the variables from the data to be plotted on the horizontal and vertical axes of the companion graphs. Other mappings from the data include the color variable for the visualization and the label for the points on the map. Parameter settings include variable labels and the legend and plot titles. These arguments can be seen in the code examples in [Section 5](#workflow).
@@ -120,7 +120,7 @@ We decided to have users pass required mappings to the \pkg{DrivePlotR} function
 
 Users provide the vertical axis variables to \pkg{DrivePlotR}'s `driveplot_companions` and `driveplot` functions in a non-standard way as well. Given the number of arguments for each \pkg{DrivePlotR} function, we opted against using R's dots notation (`...`) in favor of passing the bare column names within a vector (e.g., `ys = c(speed_mph, gyro_heading)`) or list (e.g., `ys = list(speed_mph, gyro_heading)`). We did this because we wanted to reduce confusion for the user when providing other function arguments (of which there are many). Users may transform the ys within the function arguments as well. For example, including `ys = c(speed_mph * 1.60934, gyro_heading %% 360)` allows the user to convert the speed from miles per hour to kilometers per hour and ensure that the gyroscopic heading falls between 0 and 360, all within the call to `driveplot_companions` or `driveplot`. We provide examples of such within-function transformations in [Section 5](#workflow).
 
-# Plot Map Components {#plotmap}
+# Plot map components {#plotmap}
 
 In this section, we describe the components of \pkg{DrivePlotR} plot maps that are visible to the user. We discuss the map component in [Section 3.1](#map) and the companion graph component in [Section 3.2](#companions).
 
@@ -134,13 +134,13 @@ Users can choose to have a label appear when they hover the cursor over points o
 
 The viridis color palettes are designed to provide uniform color contrasts, i.e, less distortion from difference in the data to difference in the perceived color differences [@smithMatplotlibColormaps2015]. Here, color is typically used to map the direction (and some of the speed) of a drive. The viridis color palettes ensure that points are visible on a busy background, such as the Open Street Map tiles. To make even light colors in the scheme stand out on a white background, we use a (very thin) ring of gray around each dot to increase the contrast between point and background. This contrast can be seen in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:leftturn)', '\\@ref(fig:leftturn-screenshot)'))`.
 
-## Companion Graphs {#companions}
+## Companion graphs {#companions}
 
 Each \pkg{DrivePlotR} plot map has one or more companion graphs next to the map. The function `driveplot_companions` creates the companion graphs by calling the function `driveplot_companion` (which creates a single companion graph) the necessary number of times determined by the number of variables the user provides. We do not restrict users in the number of variables they provide to be plotted in companion graphs. However, creating more than four companion graphs may cause the visualization to become distorted or overwhelming, and we raise a warning in this case. All companion graphs share the same variable on the horizontal axis. In our original use cases for \pkg{DrivePlotR}, we plotted time on the horizontal axis to emphasize the spatio-temporal nature of the data. However, we are free to choose a different variable (e.g., distance) that works better for different applications. Users specify the variables for each of the companion graphs. The same color choices applied to the map also apply to the companion graphs. Users can also specify the labels for the shared horizontal axis, the vertical axis for each plot, and the legend, if present. To ease the interaction with the map and to emphasize the discrete nature of the data, we use points instead of curves on the companion graphs.
 
 We use functions from \CRANpkg{ggplot2} [@wickhamGgplot2ElegantGraphics2016] to create the initial version of each companion graph. We then use the `ggplotly` function from \CRANpkg{plotly} [@carson] to convert the initial static graphs produced by \CRANpkg{ggplot2} into an interactive plotly object. We then collect the resulting interactive graphs into one display using the \CRANpkg{plotly} function `subplot`, which allows the companion graphs to be stacked on top of each other. This establishes that the graphs share the same horizontal axis and legend and ensures that zooming on one of the graphs will affect the others, an essential aspect of the interactive nature of the plot.
 
-### Visualizing Angle Variables {#angles}
+### Visualizing angle variables {#angles}
 
 A widely used convention for values representing angles is to report them in a bounded interval of width 360 degrees (or $2\pi$ radians). The interval of $[0, 360)$ (or $[0, 2\pi)$) corresponds to the first congruence class, and ensures that any mathematical calculations are well-defined. However, this restriction introduces discontinuities in the data that visually are very distracting, because they break two very basic (implicit) Gestalt principles of (1) continuity and (2) grouping. The violation of the first Gestalt principle is obvious. The grouping principle means that items shown in close proximity are expected to be close in the data, and correspondingly, items shown far apart are expected to be far apart in the data. If the car is driven at an angle close to $0^\circ$, the reported angles might fall in the two spatially separated intervals of $[0,5]$ degrees and $[355, 360)$ degrees. Visually, the separation between these intervals falsely suggests two clusters of data.
 
@@ -203,11 +203,11 @@ knitr::include_graphics("figures/four_graphs.png")
 
 Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:four-plots)', '\\@ref(fig:four-plots-screenshot)'))` gives a more detailed insight into the drive using a stack of four companion plots. The two middle plots show two different ways of measuring the heading, or the direction the vehicle is traveling. The second of the four plots shows the heading as measured by the GPS sensor mounted in the car while the third of the four plots shows the heading as measured by the gyroscope mounted in the car. The two sensors clearly measure heading differently, with the GPS heading being much less consistent than the gyro heading. \pkg{DrivePlotR} users can select the points where the GPS heading is particularly inconsistent and see if there are certain types of locations or driving scenarios where this behavior tends to occur.
 
-# Use Cases {#usecases}
+# Use cases {#usecases}
 
 In this section, we present three use cases for which we have used \pkg{DrivePlotR} plot maps. We assess the quality of the GPS data for a vehicle trajectory in [Section 4.1](#gps). We describe how we use \pkg{DrivePlotR} plot maps to identify trajectory components associated with turns in [Section 4.2](#turnid). In [Section 4.3](#accel), we investigate detected acceleration events to determine if they are indicative of problematic driving behavior.
 
-## Assessing Data Quality {#gps}
+## Assessing data quality {#gps}
 
 Figure \@ref(fig:headings) shows an overlay of the direction in which a car is moving during one drive, measured by (a) GPS (gray points) and (b) inferred from gyroscopic motion (colored points). The expectation would be that these two direction measures should be highly correlated. However, in this case, there are surprisingly large differences between the measurements. In particular, when the car is standing or moving very slowly, the GPS measurements show drastic (and most likely confabulated) changes in direction. The gray bands in Figure \@ref(fig:headings) indicate periods of speeds of less than 2 miles an hour. When the car is moving at more than that speed, the gyroscopic heading and GPS measurements move in tandem. Thus, for this example, the gyroscopic heading is generally more consistent and thus preferred over the GPS heading.
 
@@ -247,7 +247,7 @@ nds_data7 |>
   xlab("Time")
 ```
 
-## Turn Identification {#turnid}
+## Turn identification {#turnid}
 
 \pkg{DrivePlotR} is a helpful tool for identifying different aspects of a drive. For example, an effective turn identification method is a necessary step in order to analyze the number of left and right turns or the time taken to complete individual turns. It is easy to distinguish turns visually, but it is not always straightforward to do so programmatically. Drifting GPS coordinates that do not exactly follow the road system make it difficult to identify turns using GPS data alone. If turns at a specific intersection are of interest, it may seem reasonable to examine drivers' behavior within the vicinity of the intersection. However, shifts in GPS data can cause the coordinates corresponding to the turns to deviate from the intersection proper, making geospatial turn identification unreliable. We need a better method of turn identification.
 
@@ -414,7 +414,7 @@ knitr::include_graphics("figures/left_turn_id.png")
 knitr::include_graphics("figures/left_turn_id_zoom.png")
 ```
 
-## Acceleration Event Investigation {#accel}
+## Acceleration event investigation {#accel}
 
 Harsh acceleration and hard braking are undesirable driving behaviors that are known to be associated with unsafe driving conditions and otherwise avoidable vehicle wear-and-tear. In-vehicle accelerometers can monitor these events and flag when they occur. Detecting harsh acceleration and hard braking events may be of interest in the context of a naturalistic driving study. We show an example of part of an eastbound drive from an NDS that includes an acceleration event in Figure \@ref(fig:accel). For this NDS, an acceleration event was defined as having occurred if the absolute longitudinal (front-to-back) or lateral (side-to-side) acceleration of the vehicle exceeded 0.35g for at least 0.1 second, where the unit "g" is the acceleration due to gravity (1g = 9.81 $\text{m/s}^2$). Three severity categories were defined based on the level of absolute acceleration: low for absolute accelerations of 0.35g to 0.44g, medium for absolute accelerations of 0.45g to 0.59g, and high for absolute accelerations over 0.6g. In Figure \@ref(fig:accel), the companion graphs show the speed of the vehicle in miles per hour, as well as the longitudinal acceleration and the lateral acceleration of the vehicle. Figure \@ref(fig:accel) shows a medium acceleration event detected due to a sharp decrease in longitudinal acceleration, although the GPS coordinates and the decrease in speed of approximately 1 mile per hour in 1 second associated with the acceleration event indicate that this acceleration event is likely not of concern.
 
@@ -487,7 +487,7 @@ Figure \@ref(fig:rightturn) shows a low acceleration event detected during a dif
 knitr::include_graphics("figures/accel_event_right_turn_none.png")
 ```
 
-# DrivePlotR Workflow {#workflow}
+# DrivePlotR workflow {#workflow}
 
 We now outline the basic workflow for making visualizations with \pkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
 
@@ -686,7 +686,7 @@ v.  Save and share interactive plot maps.
 
 \pkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. When using RMarkdown or Quarto, we recommend explicitly setting the width and height of the plot map in the `width` and `height` arguments to the `driveplot` function to prevent the visualization from stretching and occupying more space than desired. Acceptable units include %, vh, vw, and px. Another option is to manually save the \pkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane. \pkg{DrivePlotR} plot maps are incompatible with the `saveWidget` function from \CRANpkg{htmlwidgets} [@htmlwidgets].
 
-# Extensions/Limitations {#extensions}
+# Extensions/limitations {#extensions}
 
 One current limitation of \pkg{DrivePlotR} is that color and position are the only possible ways to distinguish data points from each other. This means that it becomes difficult to differentiate more than a handful of distinct drives on the same plot map. In future extensions of \pkg{DrivePlotR}, we want to include the option to change the shape of the points based on user preference or a variable in the dataset. This will enable \pkg{DrivePlotR} to better handle use cases where users need to differentiate multiple drives by the same driver or drives made by different drivers.
 
