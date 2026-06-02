@@ -1,12 +1,14 @@
 ---
 output: pdf_document
 fontsize: 12pt
+colorlinks: true
 ---
 
 \thispagestyle{empty}
 \today
 
-Editor   
+Emi Tanaka  
+Editor-in-Chief     
 The R Journal  
 \bigskip
 
@@ -18,19 +20,35 @@ Multivariate High-Resolution Spatio-Temporal Data" for publication in the R
 Journal.
 
 The manuscript introduces the new package called `DrivePlotR`, which creates 
-interactive visualizations for vehicle trajectories. These visualizations 
-display a map of the trajectory alongside graphs of other variables and are 
-easy to share with collaborators. 
+interactive visualizations for vehicle trajectories. `DrivePlotR` enables users
+to create linked displays that unite maps of vehicle trajectories with 
+synchronized plots of relevant telematics variables, such as speed and heading.
+These visualizations provide a useful way to explore driving behavior and
+temporal patterns within vehicle trajectories.
 
-`DrivePlotR` is not yet available on CRAN, but we will time the CRAN submission 
-with the article. To save the CRAN team's time, we prefer to submit 
-`DrivePlotR` to CRAN once, after making any improvements suggested by the 
-R Journal reviewers. 
+The visualizations produced by `DrivePlotR` are easily shareable while 
+maintaining data privacy. This is particularly beneficial in the 
+interdisciplinary field of transportation research, where projects deal with 
+sensitive vehicle trajectory data and stakeholders may not have extensive 
+programming experience.
 
-Readers of the R Journal will be interested in this article because it provides 
-a new visualization tool for transportation data, a growing area of interest. 
-The underlying structure of `DrivePlotR` will also inspire readers to create 
-interactive visualization tools for their own applications.  
+`DrivePlotR` addresses a gap in available interactive visualization tools 
+because it is free and open source and does not require any external hosting to
+share visualizations. The package was designed to be simple to use while still
+allowing flexibility for customization.
+
+Our manuscript includes multiple examples of use cases for visualizing
+real-world trajectory data with `DrivePlotR`. The package has been submitted to
+CRAN. In lieu of a vignette, we have included
+a detailed example in the README for the package's 
+[GitHub repo](https://github.com/hardtme/DrivePlotR) and 
+[`pkgdown` site](https://hardtme.github.io/DrivePlotR/).
+
+We believe that readers of the R Journal will be interested in `DrivePlotR`, 
+especially those working in data visualization, transportation research,
+spatial analysis, and time series analysis. Thank you for your consideration of 
+our submission.
+  
 
 \bigskip
 \bigskip
