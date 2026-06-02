@@ -30,7 +30,8 @@ author:
     orcid: 0000-0002-5205-2190
 type: package
 output:
-  rjtools::rjournal_article
+  rjtools::rjournal_article:
+    self_contained: true
 bibliography: RJreferences.bib
 ---
 
