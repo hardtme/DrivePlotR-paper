@@ -101,7 +101,7 @@ For us, a large motivation for creating DrivePlotR is the possibility of easily 
 | Fully reproducible       | Yes          | Yes       | No        |
 | Privacy-friendly sharing | Yes          | No        | No        |
 
-: A comparison of the features of DrivePlotR, R Shiny, and Tableau relating to our needs. {#tbl-comparison}
+: A comparison of the features of DrivePlotR, R Shiny, and Tableau relating to our needs, showing that DrivePlotR uniquely offers no hosting requirements, full reproducibility, and privacy-friendly sharing, while all three tools support linked plots. {#tbl-comparison}
 
 We created DrivePlotR to provide self-contained, shareable linked visualizations (map + time series) without requiring a hosted environment, enabling privacy-preserving analysis of high-resolution vehicle trajectory data. We developed DrivePlotR to help in our analyses and the explanation of our results while maintaining reproducibility and data privacy. Please note that the driving data shown in all of the visualizations shown in this article are not sensitive in nature and can be freely shared.
 
