@@ -487,7 +487,7 @@ Figure \@ref(fig:rightturn) shows a low acceleration event detected during a dif
 knitr::include_graphics("figures/accel_event_right_turn_none.png")
 ```
 
-# DrivePlotR workflow {#workflow}
+# Workflow {#workflow}
 
 We now outline the basic workflow for making visualizations with \pkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
 

@@ -543,7 +543,7 @@ knitr::include_graphics("figures/accel_event_zoom_none.png")
 knitr::include_graphics("figures/accel_event_right_turn_none.png")
 ```
 
-# DrivePlotR workflow {#sec-workflow}
+# Workflow {#sec-workflow}
 
 We now outline the basic workflow for making visualizations with DrivePlotR. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
 
