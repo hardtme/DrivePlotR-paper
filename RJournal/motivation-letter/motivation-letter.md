@@ -38,7 +38,7 @@ share visualizations. The package was designed to be simple to use while still
 allowing flexibility for customization.
 
 Our manuscript includes multiple examples of use cases for visualizing
-real-world trajectory data with `DrivePlotR`. The package has been submitted to
+real-world trajectory data with `DrivePlotR`. The package is available on
 CRAN. In lieu of a vignette, we have included
 a detailed example demonstrating the workflow in the README for the package's 
 [GitHub repo](https://github.com/hardtme/DrivePlotR) and 
