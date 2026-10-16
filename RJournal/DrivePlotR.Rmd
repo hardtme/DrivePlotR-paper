@@ -707,7 +707,19 @@ knitr::include_graphics("figures/transform_plotmap.png")
 
 v.  Save and share interactive plot maps.
 
-\CRANpkg{DrivePlotR} plot maps can be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. When using RMarkdown or Quarto, we recommend explicitly setting the width and height of the plot map in the `width` and `height` arguments to the `driveplot` function to prevent the visualization from stretching and occupying more space than desired. Acceptable units include %, vh, vw, and px. Another option is to manually save the \CRANpkg{DrivePlotR} visualization as a web page from the RStudio Viewer pane. \CRANpkg{DrivePlotR} plot maps are incompatible with the `saveWidget` function from \CRANpkg{htmlwidgets} [@htmlwidgets].
+Users can save \CRANpkg{DrivePlotR} plot maps as standalone HTML files using the `save_plotmap` function. Example code is given below.
+
+```{r save-plotmap, echo = TRUE, eval = FALSE}
+myplotmap <- driveplot(
+  shareddata = shared_drive,
+  x = time_cst,
+  ys = c(speed_mph, gyro_heading, gps_pdop),
+  plottitle = "A Drive in Omaha, NE"
+)
+save_plotmap(plotmap = myplotmap, filepath = "myplotmap.html")
+```
+
+\CRANpkg{DrivePlotR} plot maps can also be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. When using RMarkdown or Quarto, we recommend explicitly setting the width and height of the plot map in the `width` and `height` arguments to the `driveplot` function to prevent the visualization from stretching and occupying more space than desired. Acceptable units include %, vh, vw, and px.  Another option is to manually save the plot map as a web page from the RStudio Viewer pane. 
 
 # Extensions/limitations {#extensions}
 
