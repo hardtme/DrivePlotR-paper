@@ -656,7 +656,7 @@ knitr::include_graphics("figures/transform_plotmap.png")
 
 v.  Save and share interactive plot maps.
 
-Users can save \CRANpkg{DrivePlotR} plot maps as standalone HTML files using the `save_plotmap` function. Example code is given below.
+Users can save \CRANpkg{DrivePlotR} plot maps as standalone HTML files using the `save_plotmap` function. Example code is given below. The standalone HTML files created for the examples in this article are between 5 and 6 MB.
 
 ```{r save-plotmap, echo = TRUE, eval = FALSE}
 myplotmap <- driveplot(
