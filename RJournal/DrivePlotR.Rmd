@@ -362,7 +362,7 @@ left_turn_id <- driveplot(shareddata = nds_sf16_sd,
                           xlabel = "Time (CST)",
                           ylabels = c("Speed (MPH)", "Gyro Heading",
                                       "1st Derivative of Gyro Heading", "GPS PDOP"),
-                          legendtitle = "Left Turn Behavior",
+                          legendtitle = "Left Turn",
                           height = "50vh")
 left_turn_id
 #save_plotmap(plotmap = left_turn_id, filepath = "RJournal/figures/left_turn_id_rev.html")
