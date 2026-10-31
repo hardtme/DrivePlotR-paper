@@ -454,6 +454,10 @@ Figure \@ref(fig:rightturn) shows a low acceleration event detected during a dif
 knitr::include_graphics("figures/accel_event_right_turn_none.png")
 ```
 
+## Comparison of driving behaviors {#sec-groups}
+
+\CRANpkg{DrivePlotR} can be used to compare driving behaviors from different vehicle trajectories. The example in this section features three drives by the same driver in the same vehicle along the same route in quick succession. Thus, the geospatial aspects of the three drives are identical, and the temporal aspects are very similar. Differences among the drives are attributable to changing traffic conditions.
+
 # Workflow {#workflow}
 
 We now outline the basic workflow for making visualizations with \CRANpkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
