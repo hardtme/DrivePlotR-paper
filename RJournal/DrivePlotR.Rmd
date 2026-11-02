@@ -101,7 +101,7 @@ In this article, we introduce \CRANpkg{DrivePlotR}, an open-source dashboard for
 ```{r teaser, include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.cap = "A interactive plot map of a drive in Omaha, Nebraska, USA, created with DrivePlotR.", fig.alt = "An illustrative screenshot of a DrivePlotR plot map of a drive in Omaha, Nebraska, USA. A map on the left shows the vehicle's GPS trajectory with points colored by time as it heads east, then turns left and starts heading north. Three stacked plots on the right (also with points colored by time) display vehicle speed (MPH), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure) over time during the drive. The plots show changes in the variables as the vehicle stops, turns, and drives straight."}
 data("drive7")
 shared_drive <- crosstalk::SharedData$new(drive7)
-driveplot(
+teaser <- driveplot(
   shareddata = shared_drive,
   x = time_cst,
   ys = c(speed_mph, gyro_heading, gps_pdop),
@@ -114,10 +114,21 @@ driveplot(
   plottitle = "A Drive in Omaha, NE",
   height = "50vh"
 )
+teaser
+# save_plotmap(plotmap = teaser, 
+#              filepath = here::here("RJournal/figures/teaser_rev.html"))
 ```
 
-```{r teaser-screenshot, include = knitr::is_latex_output(), eval = knitr::is_latex_output(), fig.cap = "A screenshot of an interactive plot map created with DrivePlotR rendered as an HTML file in an internet browser.", fig.alt = "An illustrative screenshot of a DrivePlotR plot map of a drive in Omaha, Nebraska, USA. A map on the left shows the vehicle's GPS trajectory with points colored by time as it heads east, then turns left and starts heading north. Three stacked plots on the right (also with points colored by time) display vehicle speed (MPH), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure) over time during the drive. The plots show changes in the variables as the vehicle stops, turns, and drives straight."}
-knitr::include_graphics("figures/figure1new.png")
+```{r teaser-screenshot, include = knitr::is_latex_output(), eval = knitr::is_latex_output(), fig.cap = "A screenshot of an interactive plot map created with DrivePlotR.", fig.alt = "An illustrative screenshot of a DrivePlotR plot map of a drive in Omaha, Nebraska, USA. A map on the left shows the vehicle's GPS trajectory with points colored by time as it heads east, then turns left and starts heading north. Three stacked plots on the right (also with points colored by time) display vehicle speed (MPH), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure) over time during the drive. The plots show changes in the variables as the vehicle stops, turns, and drives straight."}
+# webshot2::webshot(
+#   url      = here::here("RJournal/figures/teaser_rev.html"),
+#   file     = here::here("RJournal/figures/figure1_rev.png"),
+#   vwidth   = 1200,
+#   vheight  = 850,
+#   cliprect = c(0, 0, 1200, 850 / 2),
+#   zoom = 2
+# )
+knitr::include_graphics("figures/figure1_rev.png")
 ```
 
 The outline of this article is as follows. In [Section 2](#background), we describe the relevant methodologies we brought together to create \CRANpkg{DrivePlotR}. We discuss all the \CRANpkg{DrivePlotR} plot map components shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:teaser)', '\\@ref(fig:teaser-screenshot)'))` in [Section 3](#plotmap). Then, we highlight some use cases of \CRANpkg{DrivePlotR} in [Section 4](#usecases) and demonstrate a typical \CRANpkg{DrivePlotR} workflow in [Section 5](#workflow). Lastly, we discuss possible extensions for future versions of \CRANpkg{DrivePlotR} in [Section 6](#extensions).
@@ -369,8 +380,6 @@ left_turn_id
 ```
 
 ```{r leftturn-screenshot, fig.cap = "Identifying a left turn based on changes in heading. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-# webshot2::webshot(here::here("RJournal/figures/left_turn_id_rev.html"),
-#                   here::here("RJournal/figures/left_turn_id_rev.png"))
 
 # webshot2::webshot(
 #   url      = here::here("RJournal/figures/left_turn_id_rev.html"),
