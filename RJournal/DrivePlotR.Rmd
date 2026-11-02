@@ -474,7 +474,50 @@ knitr::include_graphics("figures/accel_event_right_turn_none.png")
 
 ## Comparison of driving behaviors {#sec-groups}
 
-\CRANpkg{DrivePlotR} can be used to compare driving behaviors from different vehicle trajectories. The example in this section features three drives by the same driver in the same vehicle along the same route in quick succession. Thus, the geospatial aspects of the three drives are identical, and the temporal aspects are very similar. Differences among the drives are attributable to changing traffic conditions.
+\CRANpkg{DrivePlotR} can be used to compare driving behaviors from different vehicle trajectories shown on the same plot map. Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:loops)', '\\@ref(fig:loops-screenshot)'))` features three drives by the same driver in the same vehicle around Hardin Hall on the University of Nebraska-Lincoln campus. The route starts to the northwest of Hardin Hall in a parking lot, then proceeds south and around the building via four left turns. The drives happened within rapid succession of each other, and time was rescaled so all drives started at time 0. 
+
+```{r loops, include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.cap="Three drives around Hardin Hall on the University of Nebraska-Lincoln campus.", fig.alt="DrivePlotR plot map showing three drives distinguished by color. The map on the left shows the vehicle trajectories, which follow a generally rectangular route around a building. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the raw heading (degrees), and the continuity-corrected heading (degrees). Drive 1 features some unusually high speeds for local roads."}
+loops <- loops |> 
+  group_by(loop) |> 
+  mutate(loop = as.character(loop),
+         scaled_time = time - min(time))
+loop_sd <- crosstalk::SharedData$new(loops)
+
+loop_plotmap <- driveplot(
+  shareddata = loop_sd,
+  lng = lon,
+  lat = lat,
+  x = scaled_time,
+  ys = c(speed, heading_raw, heading),
+  group = loop,
+  colorvar = loop,
+  colorpalette = "Dark2",
+  fillopacity = 0.5,
+  xlabel = "Scaled Time (sec)",
+  ylabels = c("Speed (MPH)", "Raw Heading", "Continuity-Corrected Heading"),
+  legendtitle = "Drive",
+  height = "50vh"
+)
+loop_plotmap
+# save_plotmap(plotmap = loop_plotmap,
+#              filepath = here::here("RJournal/figures/loops.html"))
+```
+
+```{r loops-screenshot, include = knitr::is_latex_output(), eval = knitr::is_latex_output(), fig.cap="Three drives around Hardin Hall on the University of Nebraska-Lincoln campus. Visit the online version to see the interactive plot map.", fig.alt="DrivePlotR plot map showing three drives along the same route, distinguished by color. The map on the left shows the vehicle trajectories, which all follow a generally rectangular route around a building. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the raw heading (degrees), and the continuity-corrected heading (degrees)."}
+# webshot2::webshot(
+#   url      = here::here("RJournal/figures/loops.html"),
+#   file     = here::here("RJournal/figures/loops.png"),
+#   vwidth   = 1200,
+#   vheight  = 850,
+#   cliprect = c(0, 0, 1200, 850 / 2),
+#   zoom = 2
+# )
+knitr::include_graphics("figures/loops.png")
+```
+
+Because all three drives followed the same route, we would expect the geospatial aspects of the three drives to be identical. This is generally true, but Drive 1 in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:loops)', '\\@ref(fig:loops-screenshot)'))` shows some issues that stem from GPS error rather than driver behavior. First, there is an isolated GPS location for Drive 1 in the northeast corner of the route. This point makes little sense compared to its immediate neighbors from Drive 1, so it indicates an error in the GPS location for that point. Second, from the companion graph for speed, we note that Drive 1 has two points with speeds above 50 MPH. We know that the driver of the vehicle did not drive this fast along this route, so we know that these speeds also indicate GPS problems.
+
+The companion graphs in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:loops)', '\\@ref(fig:loops-screenshot)'))` also emphasize the visual utility of continuity-corrected heading. When the vehicle went in a northerly direction, the raw heading oscillated between small positive values and values near 360. This oscillation is visually distracting and misleading. In contrast, the continuity-corrected heading for each drive looks like a step function with four steps representing the four left turns. The three drives have very similar continuity-corrected headings, with some variation around the turns. This variation stems from traffic conditions, as well as the fact that GPS locations and headings become unreliable at low speeds, as we expect around turns.
 
 # Workflow {#workflow}
 
@@ -689,7 +732,7 @@ transform_plotmap
 # )
 ```
 
-```{r transform-plotmap-screenshot, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r transform-plotmap-screenshot, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map.", fig.alt="A plot map where the variables in the companion graphs have been transformed in the function arguments. Speed is provided in kilometers per hour instead of miles per hour. Heading is shown as general directions (north, south, east, west) instead of numbers. GPS PDOP remains unchanged.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
 knitr::include_graphics("figures/transform_plotmap_rev.png")
 ```
 
