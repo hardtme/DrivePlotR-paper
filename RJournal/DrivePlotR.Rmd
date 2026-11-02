@@ -252,15 +252,15 @@ four <- driveplot_companions(shareddata = nds_sf7_sd,
                              plotheight = '100vh'
                              )
 four
-# save_plotmap(plotmap = four, filepath = "RJournal/figures/four_graphs_rev.html")
-# webshot2::webshot(here::here("RJournal/figures/four_graphs.html"),
-#                   file = here::here("RJournal/figures/four_graphs.png"),
+# save_plotmap(plotmap = four, filepath = here::here("RJournal/figures/four_graphs_rev.html"))
+# webshot2::webshot(here::here("RJournal/figures/four_graphs_rev.html"),
+#                   file = here::here("RJournal/figures/four_graphs_rev.png"),
 #                   delay = 1,
 #                   zoom = 2)
 ```
 
-```{r, four-plots-screenshot, fig.cap="Four companion graphs. Visit the online version to see the interactive version.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-knitr::include_graphics("figures/four_graphs.png")
+```{r, four-plots-screenshot, fig.cap="Four companion graphs. Visit the online version to see the interactive graphs.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+knitr::include_graphics("figures/four_graphs_rev.png")
 ```
 
 Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:four-plots)', '\\@ref(fig:four-plots-screenshot)'))` gives a more detailed insight into the drive using a stack of four companion plots. The two middle plots show two different ways of measuring the heading, or the direction the vehicle is traveling. The second of the four plots shows the heading as measured by the GPS sensor mounted in the car while the third of the four plots shows the heading as measured by the gyroscope mounted in the car. The two sensors clearly measure heading differently, with the GPS heading being much less consistent than the gyro heading. \CRANpkg{DrivePlotR} users can select the points where the GPS heading is particularly inconsistent and see if there are certain types of locations or driving scenarios where this behavior tends to occur.
@@ -365,13 +365,13 @@ left_turn_id <- driveplot(shareddata = nds_sf16_sd,
                           legendtitle = "Left Turn",
                           height = "50vh")
 left_turn_id
-#save_plotmap(plotmap = left_turn_id, filepath = "RJournal/figures/left_turn_id_rev.html")
+#save_plotmap(plotmap = left_turn_id, filepath = here::here("RJournal/figures/left_turn_id_rev.html"))
 ```
 
 ```{r leftturn-screenshot, fig.cap = "Identifying a left turn based on changes in heading. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-# webshot2::webshot("figures/left_turn_id.html", "figures/left_turn_id.png", zoom = 2)
-# Retake screenshot!
-knitr::include_graphics("figures/left_turn_id.png")
+# webshot2::webshot(here::here("RJournal/figures/left_turn_id_rev.html"),
+#                   here::here("RJournal/figures/left_turn_id_rev.png"))
+knitr::include_graphics("figures/left_turn_id_rev.png")
 ```
 
 ```{r leftturnzoom, fig.cap="Zooming in on the left turn.", fig.alt="Zoomed-in view of the left turn of interest. On the left is a map of the vehicle trajectory at the intersection. There are four stacked time series plots on the right, showing the vehicle speed (MPH), the gyroscopic heading (degrees), the first derivative of gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure). The plots highlight speed near 0 while the vehicle is waiting to turn. During the turn, the first derivative of gyroscopic heading dips below 0 before resuming its flat pattern."}
@@ -509,11 +509,11 @@ basic_map
 ```
 
 ```{r basic-map-screenshot, fig.cap="A basic standalone map. Visit the online version to see the interactive map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-# webshot2::webshot(here::here("RJournal/figures/basic_map.html"),
-#                   here::here("RJournal/figures/basic_map.png"),
+# webshot2::webshot(here::here("RJournal/figures/basic_map_rev.html"),
+#                   here::here("RJournal/figures/basic_map_rev.png"),
 #                   delay = 10,
 #                   zoom = 2)
-knitr::include_graphics("figures/basic_map.png")
+knitr::include_graphics("figures/basic_map_rev.png")
 ```
 
 We provide functionality to create standalone companion graphs in addition to maps. The basic companion graph created by the code below is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`.
@@ -542,11 +542,11 @@ basic_companion
 ```
 
 ```{r basic-graph-screenshot, fig.cap="A basic companion graph for speed. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-# webshot2::webshot(here::here("RJournal/figures/basic_graph.html"),
-#                   here::here("RJournal/figures/basic_graph.png"),
+# webshot2::webshot(here::here("RJournal/figures/basic_graph_rev.html"),
+#                   here::here("RJournal/figures/basic_graph_rev.png"),
 #                   delay = 10,
 #                   zoom = 2)
-knitr::include_graphics("figures/basic_graph.png")
+knitr::include_graphics("figures/basic_graph_rev.png")
 ```
 
 We developed \CRANpkg{DrivePlotR} so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. The resulting companion graph is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-graph)', '\\@ref(fig:transform-graph-screenshot)'))`. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions`and `driveplot` as well.
@@ -575,11 +575,11 @@ transform_graph
 ```
 
 ```{r transform-graph-screenshot, fig.cap="A basic companion graph where time and speed have been transformed within the function arguments. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-# webshot2::webshot(here::here("RJournal/figures/transform_graph.html"),
-#                   here::here("RJournal/figures/transform_graph.png"),
+# webshot2::webshot(here::here("RJournal/figures/transform_graph_rev.html"),
+#                   here::here("RJournal/figures/transform_graph_rev.png"),
 #                   delay = 10,
 #                   zoom = 2)
-knitr::include_graphics("figures/transform_graph.png")
+knitr::include_graphics("figures/transform_graph_rev.png")
 ```
 
 We offer \CRANpkg{DrivePlotR} users many options to customize their plot maps. For example, the following code was used to create the plot map in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:teaser)', '\\@ref(fig:teaser-screenshot)'))`.
@@ -648,8 +648,8 @@ driveplot(
 # )
 # transform_plotmap
 # save_plotmap(plotmap = transform_plotmap, filepath = "RJournal/figures/transform_plotmap_rev.html")
-# webshot2::webshot(here::here("RJournal/figures/transform_plotmap.html"),
-#                   file = here::here("RJournal/figures/transform_plotmap.png"),
+# webshot2::webshot(here::here("RJournal/figures/transform_plotmap_rev.html"),
+#                   file = here::here("RJournal/figures/transform_plotmap_rev.png"),
 #                   delay = 1,
 #                   zoom = 2)
 ```
