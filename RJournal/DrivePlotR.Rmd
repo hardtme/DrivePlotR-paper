@@ -371,6 +371,15 @@ left_turn_id
 ```{r leftturn-screenshot, fig.cap = "Identifying a left turn based on changes in heading. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
 # webshot2::webshot(here::here("RJournal/figures/left_turn_id_rev.html"),
 #                   here::here("RJournal/figures/left_turn_id_rev.png"))
+
+# webshot2::webshot(
+#   url      = here::here("RJournal/figures/left_turn_id_rev.html"),
+#   file     = here::here("RJournal/figures/left_turn_id_rev.png"),
+#   vwidth   = 1200,
+#   vheight  = 850,
+#   cliprect = c(0, 0, 1200, 850 / 2),
+#   zoom = 2
+# )
 knitr::include_graphics("figures/left_turn_id_rev.png")
 ```
 
@@ -505,13 +514,13 @@ driveplot_map(shareddata = shared_drive)
 basic_map <- driveplot_map(shareddata = shared_drive,
                            mapheight = "50vh")
 basic_map
-# save_plotmap(plotmap = basic_map, filepath = "RJournal/figures/basic_map_rev.html")
+# save_plotmap(plotmap = driveplot_map(shareddata = shared_drive),
+# filepath = here::here("RJournal/figures/basic_map_rev.html"))
 ```
 
 ```{r basic-map-screenshot, fig.cap="A basic standalone map. Visit the online version to see the interactive map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
 # webshot2::webshot(here::here("RJournal/figures/basic_map_rev.html"),
 #                   here::here("RJournal/figures/basic_map_rev.png"),
-#                   delay = 10,
 #                   zoom = 2)
 knitr::include_graphics("figures/basic_map_rev.png")
 ```
@@ -542,14 +551,18 @@ basic_companion
 ```
 
 ```{r basic-graph-screenshot, fig.cap="A basic companion graph for speed. Visit the online version to see the interactive companion graph.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-# webshot2::webshot(here::here("RJournal/figures/basic_graph_rev.html"),
-#                   here::here("RJournal/figures/basic_graph_rev.png"),
-#                   delay = 10,
-#                   zoom = 2)
+# webshot2::webshot(
+#   url      = here::here("RJournal/figures/basic_graph_rev.html"),
+#   file     = here::here("RJournal/figures/basic_graph_rev.png"),
+#   vwidth   = 1200,
+#   vheight  = 850,
+#   cliprect = c(0, 0, 1200, 850 / 2),
+#   zoom = 2
+# )
 knitr::include_graphics("figures/basic_graph_rev.png")
 ```
 
-We developed \CRANpkg{DrivePlotR} so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. The resulting companion graph is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-graph)', '\\@ref(fig:transform-graph-screenshot)'))`. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions`and `driveplot` as well.
+We developed \CRANpkg{DrivePlotR} so users can perform transformations within the function arguments. Suppose the user wants to recreate the visualization in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:basic-graph)', '\\@ref(fig:basic-graph-screenshot)'))`, but with time in UTC instead of US/Central time and speed in kilometers per hour instead of miles per hour. These transformations can be made directly within the `driveplot_companion` function arguments. The resulting companion graph is shown in Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:transform-graph)', '\\@ref(fig:transform-graph-screenshot)'))`. Similar transformations can be made to the `x` and `ys` arguments of `driveplot_companions` and `driveplot` as well.
 
 ```{r transform-graph-code, echo = TRUE, eval = FALSE}
 driveplot_companion(
@@ -579,6 +592,15 @@ transform_graph
 #                   here::here("RJournal/figures/transform_graph_rev.png"),
 #                   delay = 10,
 #                   zoom = 2)
+
+# webshot2::webshot(
+#   url      = here::here("RJournal/figures/transform_graph_rev.html"),
+#   file     = here::here("RJournal/figures/transform_graph_rev.png"),
+#   vwidth   = 1200,
+#   vheight  = 850,
+#   cliprect = c(0, 0, 1200, 850 / 2),
+#   zoom = 2
+# )
 knitr::include_graphics("figures/transform_graph_rev.png")
 ```
 
@@ -625,37 +647,41 @@ driveplot(
 ```
 
 ```{r transform-plotmap, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call.", include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.alt="A DrivePlotR plot map showing the same drive as in Figure 1. For this plot map, transformations were performed in the function arguments to convert speed from MPH to KPH and convert heading from degree values to general heading directions (N, S, E, W)."}
-# transform_plotmap <- driveplot(
-#   shareddata = shared_drive,
-#   x = time_cst,
-#   ys = c(
-#     speed_mph * 1.60934,
-#     c("N", "E", "S", "W")[findInterval(
-#       (gyro_heading + 45) %% 360,
-#       c(90, 180, 270)
-#     ) + 1],
-#     gps_pdop
-#   ),
-#   colorvar = gps_minute,
-#   maplabel = time_cst,
-#   colorpalette = "viridis",
-#   xlabel = "Time",
-#   ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
-#   showlegend = TRUE,
-#   legendtitle = "Minute",
-#   plottitle = "A Drive in Omaha, NE",
-#   height = "50vh"
-# )
-# transform_plotmap
+transform_plotmap <- driveplot(
+  shareddata = shared_drive,
+  x = time_cst,
+  ys = c(
+    speed_mph * 1.60934,
+    c("N", "E", "S", "W")[findInterval(
+      (gyro_heading + 45) %% 360,
+      c(90, 180, 270)
+    ) + 1],
+    gps_pdop
+  ),
+  colorvar = gps_minute,
+  maplabel = time_cst,
+  colorpalette = "viridis",
+  xlabel = "Time",
+  ylabels = c("Speed (KPH)", "General Gyro Heading", "GPS PDOP"),
+  showlegend = TRUE,
+  legendtitle = "Minute",
+  plottitle = "A Drive in Omaha, NE",
+  height = "50vh"
+)
+transform_plotmap
 # save_plotmap(plotmap = transform_plotmap, filepath = "RJournal/figures/transform_plotmap_rev.html")
-# webshot2::webshot(here::here("RJournal/figures/transform_plotmap_rev.html"),
-#                   file = here::here("RJournal/figures/transform_plotmap_rev.png"),
-#                   delay = 1,
-#                   zoom = 2)
+# webshot2::webshot(
+#   url      = here::here("RJournal/figures/transform_plotmap_rev.html"),
+#   file     = here::here("RJournal/figures/transform_plotmap_rev.png"),
+#   vwidth   = 1200,
+#   vheight  = 850,
+#   cliprect = c(0, 0, 1200, 850 / 2),
+#   zoom = 2
+# )
 ```
 
 ```{r transform-plotmap-screenshot, fig.cap="A plot map where speed in miles per hour has been converted to kilometers per hour and gyro heading numbers have been converted to general heading directions (N, S, E, W) within the function call. Visit the online version to see the interactive plot map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
-knitr::include_graphics("figures/transform_plotmap.png")
+knitr::include_graphics("figures/transform_plotmap_rev.png")
 ```
 
 v.  Save and share interactive plot maps.
