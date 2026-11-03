@@ -158,7 +158,7 @@ knitr::kable(drives78, format = "pipe")
 
 \CRANpkg{DrivePlotR} accepts datasets with explicit longitude and latitude columns as well as datasets with a simple features geometry column, such as datasets in the format from \CRANpkg{sf} [@pebesmaSpatialDataScience2023]. If a simple features geometry column is present in the data, \CRANpkg{DrivePlotR} assumes that the geometry type for the column is POINT because each row represents a single point in time and space. Other geometry types are incompatible with \CRANpkg{DrivePlotR} plot maps and will cause errors.
 
-\CRANpkg{DrivePlotR} does not accept LINESTRING data. While it is convenient to aggregate a vehicle trajectory into a single LINESTRING, such aggregation removes data attributes necessary to get the most from \CRANpkg{DrivePlotR} plot maps. LINESTRINGS only contain the geospatial component of the data, not the temporal component or any other useful covariates, and are best suited for display on a map, not for pairing with companion graphs. Users may want LINESTRING support in \CRANpkg{DrivePlotR} because they want to visualize multiple vehicle trajectories together. \CRANpkg{DrivePlotR} supports multiple trajectories on one plot map, as will be discussed later. 
+\CRANpkg{DrivePlotR} does not accept LINESTRING data. While it is convenient to aggregate a vehicle trajectory into a single LINESTRING, such aggregation removes data attributes necessary to get the most from \CRANpkg{DrivePlotR} plot maps. A LINESTRING contains only the geospatial component of the data, not the temporal component or any other useful covariates, and is best suited for display on a map, not for pairing with companion graphs. Users may want LINESTRING support in \CRANpkg{DrivePlotR} because they want to visualize multiple vehicle trajectories together. \CRANpkg{DrivePlotR} supports multiple trajectories on one plot map, as shown in the example in [Section 4.4](#groups). 
 
 The \CRANpkg{crosstalk} package [@chengCrosstalkInterWidgetInteractivity2023] is the key to the interactivity of \CRANpkg{DrivePlotR} visualizations. Before creating any \CRANpkg{DrivePlotR} visualizations, the data to be visualized must first be converted into a shared data frame, which is an R6 class created using the `SharedData$new()` method from \CRANpkg{crosstalk}.
 
@@ -537,7 +537,7 @@ The companion graphs in Figure `r knitr::asis_output(ifelse(knitr::is_html_outpu
 
 # Workflow {#workflow}
 
-We now outline the basic workflow for making visualizations with \CRANpkg{DrivePlotR}. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
+\CRANpkg{DrivePlotR} has two target users: those who use the package to create and share plot maps ("creators") and those who use plot maps to explore vehicle trajectory data without needing to know R ("explorers"). We now outline the basic workflow for making visualizations with \CRANpkg{DrivePlotR}, which will be of primary interest to creators. The package contains four main functions, each of which are used when creating an interactive plot map. The main functions are
 
 -   `driveplot` (the primary function; creates an interactive plot map by calling `driveplot_map` and `driveplot_companions`)
 
@@ -553,7 +553,7 @@ We show the relationship between the main \CRANpkg{DrivePlotR} functions in Figu
 knitr::include_graphics("figures/function_hierarchy.png")
 ```
 
-Now, we describe the steps in a basic workflow for \CRANpkg{DrivePlotR}.
+Now, we describe the steps in a basic workflow for creating a \CRANpkg{DrivePlotR} plot map.
 
 i.  Make the drive data available in the R session. We make non-sensitive drives from a naturalistic driving study available as part of the \CRANpkg{DrivePlotR} package, but any other dataset with both geographic and temporal components is also suitable. Recall that \CRANpkg{DrivePlotR} expects one row for each observation in the data.
 
@@ -767,6 +767,10 @@ save_plotmap(plotmap = myplotmap, filepath = "myplotmap.html")
 ```
 
 \CRANpkg{DrivePlotR} plot maps can also be saved by including them in an RMarkdown document knitted to a self-contained HTML file or a Quarto document rendered to HTML with embedded resources. When using RMarkdown or Quarto, we recommend explicitly setting the width and height of the plot map in the `width` and `height` arguments to the `driveplot` function to prevent the visualization from stretching and occupying more space than desired. Acceptable units include %, vh, vw, and px.  Another option is to manually save the plot map as a web page from the RStudio Viewer pane. 
+
+After a creator shares a plot map, the recipient becomes an explorer who will learn more about the trajectory data by interacting with the plot map. To activate the selection box on the map, users click the selection button below the +/- zoom buttons in the upper left corner of the map. A selection box will then appear on the map. Users can move the selection box by clicking on the 9 dots in the upper left corner of the selection box and dragging the selection box to the desired location. The white squares in the corners of the selection box allow users to resize the box. Any points that fall within the selection box on the map will also be selected on the companion graphs. To remove the selection box from the map, users click on the X button below the +/- zoom buttons in the upper left corner of the map. To clear the corresponding selection on the companion graphs, users double-click anywhere within the plotting area of one of the companion graphs.
+
+To see the interaction tools for the companion graphs, users hover over the top of the first companion graph in the stack. A modebar with a selection of buttons will appear. From left to right, the buttons are: Zoom, Pan, Box Select, Lasso Select, Zoom in, Zoom out, Autoscale, and Reset axes. Clicking a button allows users to interact with the plot map using that tool. Points selected on the companion graphs will also be selected on the map. After interacting with the plot map, double-clicking anywhere within the plotting area of one of the companion graphs resets the companion graphs.
 
 # Extensions/limitations {#extensions}
 
