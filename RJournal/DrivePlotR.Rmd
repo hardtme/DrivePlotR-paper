@@ -162,6 +162,22 @@ knitr::kable(drives78, format = "pipe")
 
 The \CRANpkg{crosstalk} package [@chengCrosstalkInterWidgetInteractivity2023] is the key to the interactivity of \CRANpkg{DrivePlotR} visualizations. Before creating any \CRANpkg{DrivePlotR} visualizations, the data to be visualized must first be converted into a shared data frame, which is an R6 class created using the `SharedData$new()` method from \CRANpkg{crosstalk}.
 
+```{r shared-data-plot-map, eval = FALSE}
+# Plot map for Figure 2
+plotmap7 <- driveplot(
+  shareddata = drive7,
+  x = time_cst,
+  ys = c(speed_mph, gps_heading, gyro_heading, gps_pdop),
+  maplabel = time_cst,
+  colorvar = speed_mph,
+  colorpalette = "viridis",
+  xlabel = "Time",
+  ylabels = c("Speed (MPH)", "GPS Heading", "Gyro Heading", "GPS PDOP"),
+  legendtitle = "Speed (MPH)"
+)
+plotmap7
+```
+
 ```{r shared-data, fig.cap = "Sketch of the chain of reactive events triggered by (1) the user selecting a point on the map.", fig.alt = "Diagram showing the chain of reactive events between a user's selection of a point on the map and the subsequent highlighting of the corresponding point in the data and the plots of speed (MPH), GPS heading (degrees), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure)." }
 knitr::include_graphics("figures/shared-data.png")
 ```
@@ -278,7 +294,7 @@ Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:four-pl
 
 # Use cases {#usecases}
 
-In this section, we present three use cases for which we have used \CRANpkg{DrivePlotR} plot maps. We assess the quality of the GPS data for a vehicle trajectory in [Section 4.1](#gps). We describe how we use \CRANpkg{DrivePlotR} plot maps to identify trajectory components associated with turns in [Section 4.2](#turnid). In [Section 4.3](#accel), we investigate detected acceleration events to determine if they are indicative of problematic driving behavior.
+In this section, we present four use cases for which we have used \CRANpkg{DrivePlotR} plot maps. We assess the quality of the GPS data for a vehicle trajectory in [Section 4.1](#gps). We describe how we use \CRANpkg{DrivePlotR} plot maps to identify trajectory components associated with turns in [Section 4.2](#turnid). In [Section 4.3](#accel), we investigate detected acceleration events to determine if they are indicative of problematic driving behavior. [Section 4.4](#groups) provides a comparison of multiple drives along the same route on the same plot map.
 
 ## Assessing data quality {#gps}
 
