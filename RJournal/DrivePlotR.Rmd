@@ -145,7 +145,9 @@ The interface of \CRANpkg{DrivePlotR} visualizations consists of four components
 
 \CRANpkg{DrivePlotR} requires observation-level records that link each vehicle position and timestamp to its corresponding covariate values, such as speed or acceleration. We assume that datasets used with \CRANpkg{DrivePlotR} are in long tidy form, i.e., they have one row for each observation. For example, if the data source is a DAS installed in a vehicle that records data every second, each row in the dataset represents one second during the drive. For each observation, the GPS coordinates (longitude and latitude in decimal degrees) are available, along with other information such as the vehicle's speed, heading, acceleration, etc. An example of such data is provided in Table \@ref(tab:tidy-data). 
 
-```{r, tidy-data, tab.cap="An example of acceptable data for DrivePlotR in long tidy form."}
+\newpage
+
+```{r tidy-data, tab.cap="An example of acceptable data for DrivePlotR in long tidy form."}
 data(nds_data)
 
 drives78 <- nds_data |> 
@@ -180,7 +182,7 @@ plotmap7 <- driveplot(
 plotmap7
 ```
 
-```{r shared-data, fig.cap = "Sketch of the chain of reactive events triggered by (1) the user selecting points on the map.", fig.alt = "Diagram showing the chain of reactive events between a user's selection of points on the map and the subsequent highlighting of the corresponding points in the data and the plots of speed (MPH), GPS heading (degrees), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure)." }
+```{r shared-data, fig.cap = "Sketch of the chain of reactive events triggered by (1) the user selecting points on the map.", fig.alt = "Diagram showing the chain of reactive events between a user's selection of points on the map and the subsequent highlighting of the corresponding points in the data and the plots of speed (MPH), GPS heading (degrees), gyroscopic heading (degrees), and GPS PDOP (a GPS data quality measure).", fig.align="center", out.width = "75%"}
 knitr::include_graphics("figures/shared-data-rev.png")
 ```
 
@@ -235,7 +237,7 @@ When a non-numeric color variable is provided and points are selected on a plot 
 
 A widely used convention for values representing angles is to report them in a bounded interval of width 360 degrees (or $2\pi$ radians). The interval of $[0, 360)$ (or $[0, 2\pi)$) corresponds to the first congruence class, and ensures that any mathematical calculations are well-defined. However, this restriction introduces discontinuities in the data that visually are very distracting, because they break two very basic (implicit) Gestalt principles of (1) continuity and (2) grouping. The violation of the first Gestalt principle is obvious. The grouping principle means that items shown in close proximity are expected to be close in the data, and correspondingly, items shown far apart are expected to be far apart in the data. If the car is driven at an angle close to $0^\circ$, the reported angles might fall in the two spatially separated intervals of $[0,5]$ degrees and $[355, 360)$ degrees. Visually, the separation between these intervals falsely suggests two clusters of data.
 
-```{r angles, fig.cap = "Raw direction (top) and continuity-corrected direction (bottom).", fig.alt="Two stacked time-series plots of vehicle heading angle over time. The top plot features the raw heading and includes abrupt jumps in heading when the vehicle drives north and the heading changes from small positive values near 0 degrees to values near 360 degrees. The bottom plot shows the corrected heading, for which the abrupt jumps have been smoothed."}
+```{r angles, fig.cap = "Raw direction (top) and continuity-corrected direction (bottom).", fig.alt="Two stacked time-series plots of vehicle heading angle over time. The top plot features the raw heading and includes abrupt jumps in heading when the vehicle drives north and the heading changes from small positive values near 0 degrees to values near 360 degrees. The bottom plot shows the corrected heading, for which the abrupt jumps have been smoothed.", fig.align="center", out.width = "75%"}
 nds_data7 <- nds_data |> filter(drive == 7)
 nds_data7 <- nds_data7 |>
   mutate(
@@ -288,7 +290,7 @@ four
 #                   zoom = 2)
 ```
 
-```{r, four-plots-screenshot, fig.cap="Four companion graphs. Visit the online version to see the interactive graphs.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r, four-plots-screenshot, fig.cap="Four companion graphs. Visit the online version to see the interactive graphs.", include = knitr::is_latex_output(), eval = knitr::is_latex_output(), fig.align="center", out.width = "75%"}
 knitr::include_graphics("figures/four_graphs_rev.png")
 ```
 
@@ -302,7 +304,7 @@ In this section, we present four use cases for which we have used \CRANpkg{Drive
 
 Figure \@ref(fig:headings) shows an overlay of the direction in which a car is moving during one drive, measured by (a) GPS (gray points) and (b) inferred from gyroscopic motion (colored points). The expectation would be that these two direction measures should be highly correlated. However, in this case, there are surprisingly large differences between the measurements. In particular, when the car is standing or moving very slowly, the GPS measurements show drastic (and most likely confabulated) changes in direction. The gray bands in Figure \@ref(fig:headings) indicate periods of speeds of less than 2 miles an hour. When the car is moving at more than that speed, the gyroscopic heading and GPS measurements move in tandem. Thus, for this example, the gyroscopic heading is generally more consistent and thus preferred over the GPS heading.
 
-```{r headings, fig.cap="Comparison of two measures for a car's direction for one drive: colored points show gyroscopic heading (measured in the car), the gray points show heading as measured by GPS. When the speeds are low (gray rectangles), GPS heading shows dramatic changes.", fig.alt="Time series plot of GPS heading (degrees) and gyroscopic heading (degrees). The GPS heading points are gray and the gyroscopic heading points are colored by the vehicle speed from 0 to just above 30 MPH. At low speeds below 2 MPH, the GPS heading shows drastic changes. At higher speeds, the GPS heading and the gyroscopic heading move together. This illustrates that GPS heading is particularly erratic at low speeds and gyroscopic heading is generally more consistent."}
+```{r headings, fig.cap="Comparison of two measures for a car's direction for one drive: colored points show gyroscopic heading (measured in the car), the gray points show heading as measured by GPS. When the speeds are low (gray rectangles), GPS heading shows dramatic changes.", fig.alt="Time series plot of GPS heading (degrees) and gyroscopic heading (degrees). The GPS heading points are gray and the gyroscopic heading points are colored by the vehicle speed from 0 to just above 30 MPH. At low speeds below 2 MPH, the GPS heading shows drastic changes. At higher speeds, the GPS heading and the gyroscopic heading move together. This illustrates that GPS heading is particularly erratic at low speeds and gyroscopic heading is generally more consistent.", fig.align="center", out.width = "75%"}
 lowspeed_intervals <- nds_data7 |>
   mutate(
     low_speed = speed_mph < 1.75,
@@ -551,7 +553,7 @@ The companion graphs in Figure `r knitr::asis_output(ifelse(knitr::is_html_outpu
 
 We show the relationship between the main \CRANpkg{DrivePlotR} functions in Figure \@ref(fig:functions). \CRANpkg{DrivePlotR} also contains several internal helper functions that are not user-facing. We need these functions to ensure the four main functions of \CRANpkg{DrivePlotR} work as expected.
 
-```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack.", fig.alt="Diagram showing the relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions. The function driveplot\\_companions in turn calls driveplot\\_companion."}
+```{r functions, fig.cap="The relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions.  The function driveplot\\_companions calls driveplot\\_companion to create each companion graph for the stack.", fig.alt="Diagram showing the relationship between the four main DrivePlotR functions. The top-level function driveplot calls both driveplot\\_map and driveplot\\_companions. The function driveplot\\_companions in turn calls driveplot\\_companion.", fig.align="center", out.width = "75%"}
 knitr::include_graphics("figures/function_hierarchy.png")
 ```
 
@@ -588,7 +590,7 @@ basic_map
 # filepath = here::here("RJournal/figures/basic_map_rev.html"))
 ```
 
-```{r basic-map-screenshot, fig.cap="A basic standalone map. Visit the online version to see the interactive map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output()}
+```{r basic-map-screenshot, fig.cap="A basic standalone map. Visit the online version to see the interactive map.", include = knitr::is_latex_output(), eval = knitr::is_latex_output(), fig.align="center", out.width = "75%"}
 # webshot2::webshot(here::here("RJournal/figures/basic_map_rev.html"),
 #                   here::here("RJournal/figures/basic_map_rev.png"),
 #                   zoom = 2)
