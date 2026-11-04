@@ -143,7 +143,7 @@ The interface of \CRANpkg{DrivePlotR} visualizations consists of four components
 
 ## Data format {#data}
 
-We assume that datasets used with \CRANpkg{DrivePlotR} are in long tidy form, i.e., they have one row for each observation. For example, if the data source is a DAS installed in a vehicle that records data every second, each row in the dataset represents one second during the drive. For each observation, the GPS coordinates (longitude and latitude in decimal degrees) are available, along with other information such as the vehicle's speed, heading, acceleration, etc. An example of such data is provided in \@ref(tab:tidy-data). 
+\CRANpkg{DrivePlotR} requires observation-level records that link each vehicle position and timestamp to its corresponding covariate values, such as speed or acceleration. We assume that datasets used with \CRANpkg{DrivePlotR} are in long tidy form, i.e., they have one row for each observation. For example, if the data source is a DAS installed in a vehicle that records data every second, each row in the dataset represents one second during the drive. For each observation, the GPS coordinates (longitude and latitude in decimal degrees) are available, along with other information such as the vehicle's speed, heading, acceleration, etc. An example of such data is provided in Table \@ref(tab:tidy-data). 
 
 ```{r, tidy-data, tab.cap="An example of acceptable data for DrivePlotR in long tidy form."}
 data(nds_data)
@@ -158,7 +158,9 @@ knitr::kable(drives78, format = "pipe")
 
 \CRANpkg{DrivePlotR} accepts datasets with explicit longitude and latitude columns as well as datasets with a simple features geometry column, such as datasets in the format from \CRANpkg{sf} [@pebesmaSpatialDataScience2023]. If a simple features geometry column is present in the data, \CRANpkg{DrivePlotR} assumes that the geometry type for the column is POINT because each row represents a single point in time and space. Other geometry types are incompatible with \CRANpkg{DrivePlotR} plot maps and will cause errors.
 
-\CRANpkg{DrivePlotR} does not accept LINESTRING data. While it is convenient to aggregate a vehicle trajectory into a single LINESTRING, such aggregation removes data attributes necessary to get the most from \CRANpkg{DrivePlotR} plot maps. A LINESTRING contains only the geospatial component of the data, not the temporal component or any other useful covariates, and is best suited for display on a map, not for pairing with companion graphs. Users may want LINESTRING support in \CRANpkg{DrivePlotR} because they want to visualize multiple vehicle trajectories together. \CRANpkg{DrivePlotR} supports multiple trajectories on one plot map, as shown in the example in [Section 4.4](#groups). 
+\CRANpkg{DrivePlotR} does not accept LINESTRING data. In a conventional \CRANpkg{sf} representation with one LINESTRING per trajectory, the associated attributes describe the trajectory as a whole. Such attributes do not, by themselves, provide the time-indexed measurements necessary for display on the companion graphs. For example, the mean speed for a trajectory cannot reproduce the trajectory's speed profile. The speed observed at each timestamp is needed.
+
+For spatial context, \CRANpkg{DrivePlotR} constructs LINESTRING paths from the trajectory observations and displays them as subtle gray lines beneath the points. This support for multiple trajectories lets users visualize multiple paths while preserving the observation-level information the companion graphs need. An example of a plot map with multiple trajectories is provided in [Section 4.4](#groups).
 
 The \CRANpkg{crosstalk} package [@chengCrosstalkInterWidgetInteractivity2023] is the key to the interactivity of \CRANpkg{DrivePlotR} visualizations. Before creating any \CRANpkg{DrivePlotR} visualizations, the data to be visualized must first be converted into a shared data frame, which is an R6 class created using the `SharedData$new()` method from \CRANpkg{crosstalk}.
 
@@ -488,7 +490,7 @@ Figure \@ref(fig:rightturn) shows a low acceleration event detected during a dif
 knitr::include_graphics("figures/accel_event_right_turn_none_rev.png")
 ```
 
-## Comparison of driving behaviors {#sec-groups}
+## Comparison of driving behaviors {#groups}
 
 \CRANpkg{DrivePlotR} can be used to compare driving behaviors from different vehicle trajectories shown on the same plot map. Figure `r knitr::asis_output(ifelse(knitr::is_html_output(), '\\@ref(fig:loops)', '\\@ref(fig:loops-screenshot)'))` features three drives by the same driver in the same vehicle around Hardin Hall on the University of Nebraska-Lincoln campus. The route starts to the northwest of Hardin Hall in a parking lot, then proceeds south and around the building via four left turns. The drives happened within rapid succession of each other, and time was rescaled so all drives started at time 0. 
 
