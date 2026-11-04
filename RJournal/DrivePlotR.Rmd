@@ -156,7 +156,7 @@ drives78 <- nds_data |>
 knitr::kable(drives78, format = "pipe")
 ```
 
-\CRANpkg{DrivePlotR} accepts datasets with explicit longitude and latitude columns as well as datasets with a simple features geometry column, such as datasets in the format from \CRANpkg{sf} [@pebesmaSpatialDataScience2023]. If a simple features geometry column is present in the data, \CRANpkg{DrivePlotR} assumes that the geometry type for the column is POINT because each row represents a single point in time and space. Other geometry types are incompatible with \CRANpkg{DrivePlotR} plot maps and will cause errors.
+\CRANpkg{DrivePlotR} accepts datasets with explicit longitude and latitude columns as well as datasets with a simple features geometry column, such as datasets in the format from \CRANpkg{sf} [@pebesmaSpatialDataScience2023]. Our package supports multiple trajectories with a grouping variable identifying each trajectory. If a simple features geometry column is present in the data, \CRANpkg{DrivePlotR} assumes that the geometry type for the column is POINT because each row represents a single point in time and space. Other geometry types are incompatible with \CRANpkg{DrivePlotR} plot maps and will cause errors.
 
 \CRANpkg{DrivePlotR} does not accept LINESTRING data. In a conventional \CRANpkg{sf} representation with one LINESTRING per trajectory, the associated attributes describe the trajectory as a whole. Such attributes do not, by themselves, provide the time-indexed measurements necessary for display on the companion graphs. For example, the mean speed for a trajectory cannot reproduce the trajectory's speed profile. The speed observed at each timestamp is needed.
 
