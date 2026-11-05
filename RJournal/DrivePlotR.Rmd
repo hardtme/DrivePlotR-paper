@@ -499,21 +499,20 @@ knitr::include_graphics("figures/accel_event_right_turn_none_rev.png")
 ```{r loops, include = knitr::is_html_output(), eval = knitr::is_html_output(), fig.cap="Three drives around Hardin Hall on the University of Nebraska-Lincoln campus.", fig.alt="DrivePlotR plot map showing three drives distinguished by color. The map on the left shows the vehicle trajectories, which follow a generally rectangular route around a building. There are three stacked time series plots on the right, showing the vehicle speed (MPH), the raw heading (degrees), and the continuity-corrected heading (degrees). Drive 1 features some unusually high speeds for local roads."}
 loops <- loops |> 
   group_by(loop) |> 
-  mutate(loop = as.character(loop),
-         scaled_time = time - min(time))
+  mutate(loop = as.character(loop))
 loop_sd <- crosstalk::SharedData$new(loops)
 
 loop_plotmap <- driveplot(
   shareddata = loop_sd,
   lng = lon,
   lat = lat,
-  x = scaled_time,
+  x = loop_seconds,
   ys = c(speed, heading_raw, heading),
   group = loop,
   colorvar = loop,
   colorpalette = "Dark2",
   fillopacity = 0.5,
-  xlabel = "Scaled Time (sec)",
+  xlabel = "Seconds Since Start of Drive",
   ylabels = c("Speed (MPH)", "Raw Heading", "Continuity-Corrected Heading"),
   legendtitle = "Drive",
   height = "50vh"
