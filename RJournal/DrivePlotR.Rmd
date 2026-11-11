@@ -29,9 +29,12 @@ author:
     email: basulto@iastate.edu
     orcid: 0000-0002-5205-2190
 type: package
-output:
-  rjtools::rjournal_article:
-    self_contained: true
+output: 
+  rjtools::rjournal_pdf_article:
+    toc: no
+  rjtools::rjournal_web_article:
+    self_contained: yes
+    toc: no
 bibliography: RJreferences.bib
 ---
 
