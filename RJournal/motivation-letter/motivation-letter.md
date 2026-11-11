@@ -15,39 +15,42 @@ The R Journal
 Dear Dr. Tanaka,
 \bigskip
 
-Please consider our article titled "DrivePlotR: Shareable Linked Plot Maps for 
-Multivariate High-Resolution Spatio-Temporal Data" for publication in the R 
-Journal.
+Thank you for the opportunity to revise our manuscript entitled "DrivePlotR: 
+Shareable Linked Plot Maps for Multivariate High-Resolution Spatio-Temporal 
+Data" (RJournal 2026-79) for consideration for publication in the R 
+Journal. We appreciate the valuable feedback we received from you and the 
+reviewers.
 
-The manuscript introduces the new package called `DrivePlotR`, which creates 
-interactive visualizations for vehicle trajectories. `DrivePlotR` enables users
-to create linked displays that unite maps of vehicle trajectories with 
-synchronized plots of relevant telematics variables, such as speed and heading.
-These visualizations provide a useful way to explore driving behavior and
-temporal patterns within vehicle trajectories.
+We carefully examined all comments and revised our manuscript and package to 
+address the concerns mentioned. A summary of the key modifications is given 
+below:
 
-The visualizations produced by `DrivePlotR` are easily shareable while 
-maintaining data privacy. This is particularly beneficial in the 
-interdisciplinary field of transportation research, where projects deal with 
-sensitive vehicle trajectory data and stakeholders may not have extensive 
-programming experience.
+* We updated `DrivePlotR`'s default tile provider for the maps and added the
+`tileprovider` argument to the `driveplot` and `driveplot_map` functions to 
+prevent the problems the reviewers experienced with the map tiles not 
+rendering properly.
 
-`DrivePlotR` addresses a gap in available interactive visualization tools 
-because it is free and open source and does not require any external hosting to
-share visualizations. The package was designed to be simple to use while still
-allowing flexibility for customization.
+* We improved `DrivePlotR`'s support for visualizing multiple vehicle 
+trajectories by adding the `group` argument to the main functions. We added an 
+example with multiple vehicle trajectories to the manuscript in Section 4.4 
+(Comparison of driving behaviors).
 
-Our manuscript includes multiple examples of use cases for visualizing
-real-world trajectory data with `DrivePlotR`. The package is available on
-CRAN. In lieu of a vignette, we have included
-a detailed example demonstrating the workflow in the README for the package's 
-[GitHub repo](https://github.com/hardtme/DrivePlotR) and 
-[`pkgdown` site](https://hardtme.github.io/DrivePlotR/).
+* We explained why data format requirements mean that `DrivePlotR` cannot accept 
+`LINESTRING` data.
 
-We believe that readers of the R Journal will be interested in `DrivePlotR`, 
-especially those working in data visualization, transportation research,
-spatial analysis, and time series analysis. Thank you for your consideration of 
-our submission.
+We include a complete point-by-point response to all comments in the 
+accompanying document. Our edits in response to these insightful comments have 
+further improved the manuscript and package.
+
+The updated version of `DrivePlotR` may be downloaded from GitHub using the 
+following code: `pak::pak("hardtme/DrivePlotR")`.
+
+We have not yet resubmitted `DrivePlotR` to CRAN in case further changes to the
+package are suggested. We will resubmit to CRAN after we address any potential 
+further changes to `DrivePlotR`.
+
+Thank you for your time and consideration of our work. We look forward to 
+hearing from you soon.
   
 
 \bigskip
