@@ -42,11 +42,7 @@ We include a complete point-by-point response to all comments in the
 accompanying document. Our edits in response to these insightful comments have 
 further improved the manuscript and package.
 
-The updated version of `DrivePlotR` may be downloaded from GitHub using the 
-following code: `pak::pak("hardtme/DrivePlotR")`.
-
-We have not yet resubmitted `DrivePlotR` to CRAN in case further changes to the
-package are requested. We will resubmit to CRAN after making any such changes.
+The updated version of `DrivePlotR` is available on CRAN.
 
 Thank you for your time and consideration of our work. We look forward to 
 hearing from you soon.
