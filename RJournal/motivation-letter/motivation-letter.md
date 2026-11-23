@@ -40,9 +40,8 @@ example with multiple vehicle trajectories to the manuscript in Section 4.4
 
 We include a complete point-by-point response to all comments in the 
 accompanying document. Our edits in response to these insightful comments have 
-further improved the manuscript and package.
-
-The updated version of `DrivePlotR` is available on CRAN.
+further improved the manuscript and package. `DrivePlotR` version 0.2.0 is now 
+available on CRAN.
 
 Thank you for your time and consideration of our work. We look forward to 
 hearing from you soon.
